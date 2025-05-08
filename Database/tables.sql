@@ -22,13 +22,13 @@ CREATE TABLE Game (
     team_2_id INTEGER NOT NULL,
     team_1_score INTEGER NOT NULL,
     team_2_score INTEGER NOT NULL,
-    winner_team_id INTEGER, #set with trigger
+    winner_team_id INTEGER,
     CONSTRAINT pk_pgame PRIMARY KEY (game_id),
     CONSTRAINT fk_team_1 FOREIGN KEY (team_1_id) REFERENCES Team(team_id),
     CONSTRAINT fk_team_2 FOREIGN KEY (team_2_id) REFERENCES Team(team_id)
 );
 
-CREATE TABLE PlayerStats ( #add first with trigger, update later
+CREATE TABLE PlayerStats (
     game_id INTEGER NOT NULL,
     player_id INTEGER NOT NULL,
     kills INTEGER,
