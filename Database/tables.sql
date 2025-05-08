@@ -15,13 +15,13 @@ CREATE TABLE Player (
 CREATE TABLE Game (
     game_id INTEGER PRIMARY KEY,
     date DATE,
-    1_team_id INTEGER,
-    2_team_id INTEGER
-)
+    team_1_id INTEGER,
+    team_2_id INTEGER
+);
 
 CREATE TABLE MatchResult (
     game_id INTEGER PRIMARY KEY,
     winner_team_id INTEGER,
-    1_team_score INTEGER,
-    2_team_score INTEGER,
+    team_1_score INTEGER,
+    team_2_score INTEGER,
 );
