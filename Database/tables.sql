@@ -1,31 +1,38 @@
+CREATE TABLE Players (
+    player_id INTEGER NOT NULL AUTO_INCREMENT,
+    name VARCHAR(30) NOT NULL,
+    country VARCHAR(30) NOT NULL,
+    CONSTRAINT pk_player PRIMARY KEY (player_id),
+);
 
-CREATE TABLE Team (
+CREATE TABLE Teams (
     team_id INTEGER NOT NULL AUTO_INCREMENT,
     name VARCHAR(30) NOT NULL,
     region VARCHAR(30) NOT NULL,
     CONSTRAINT pk_team PRIMARY KEY (team_id)
 );
 
-CREATE TABLE Player (
-    player_id INTEGER NOT NULL AUTO_INCREMENT,
-    name VARCHAR(30) NOT NULL,
+CREATE TABLE PlayerTeamHistory (
     team_id INTEGER NOT NULL,
-    country VARCHAR(30) NOT NULL,
-    CONSTRAINT pk_player PRIMARY KEY (player_id),
-    CONSTRAINT fk_team FOREIGN KEY (team_id) REFERENCES Team(team_id)
+    player_id INTEGER NOT NULL,
+    join_date DATE NOT NULL,
+    leave_date DATE,
+    CONSTRAINT pk_history PRIMARY KEY (team_id, player_id, join_date),
+    CONSTRAINT fk_team FOREIGN KEY (team_id) REFERENCES Teams(team_id),
+    CONSTRAINT fk_player FOREIGN KEY (player_id) REFERENCES Players(player_id)
 );
 
-CREATE TABLE Game (
+CREATE TABLE Games (
     game_id INTEGER NOT NULL AUTO_INCREMENT,
-    date DATE NOT NULL,
+    game_date DATE NOT NULL,
     team_1_id INTEGER NOT NULL,
     team_2_id INTEGER NOT NULL,
     team_1_score INTEGER NOT NULL,
     team_2_score INTEGER NOT NULL,
     winner_team_id INTEGER,
     CONSTRAINT pk_pgame PRIMARY KEY (game_id),
-    CONSTRAINT fk_team_1 FOREIGN KEY (team_1_id) REFERENCES Team(team_id),
-    CONSTRAINT fk_team_2 FOREIGN KEY (team_2_id) REFERENCES Team(team_id)
+    CONSTRAINT fk_team_1 FOREIGN KEY (team_1_id) REFERENCES Teams(team_id),
+    CONSTRAINT fk_team_2 FOREIGN KEY (team_2_id) REFERENCES Teams(team_id)
 );
 
 CREATE TABLE PlayerStats (
@@ -36,6 +43,6 @@ CREATE TABLE PlayerStats (
     damage INTEGER,
     healing INTEGER,
     CONSTRAINT pk_stats PRIMARY KEY (game_id, player_id),
-    CONSTRAINT fk_game FOREIGN KEY (game_id) REFERENCES Game(game_id),
-    CONSTRAINT fk_player FOREIGN KEY (player_id) REFERENCES Player(player_id)
+    CONSTRAINT fk_game FOREIGN KEY (game_id) REFERENCES Games(game_id),
+    CONSTRAINT fk_player FOREIGN KEY (player_id) REFERENCES Players(player_id)
 );
