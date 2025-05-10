@@ -16,8 +16,8 @@ CREATE TABLE PlayerTeamHistory (
     team_id INTEGER NOT NULL,
     player_id INTEGER NOT NULL,
     join_date DATE NOT NULL,
-    leave_date DATE,
-    CONSTRAINT pk_history PRIMARY KEY (team_id, player_id, join_date),
+    leave_date DATE, /* does not need to be set for player currently on team */
+    CONSTRAINT pk_history PRIMARY KEY (player_id, join_date),
     CONSTRAINT fk_team FOREIGN KEY (team_id) REFERENCES Teams(team_id),
     CONSTRAINT fk_player FOREIGN KEY (player_id) REFERENCES Players(player_id)
 );
@@ -29,13 +29,13 @@ CREATE TABLE Games (
     team_2_id INTEGER NOT NULL,
     team_1_score INTEGER NOT NULL,
     team_2_score INTEGER NOT NULL,
-    winner_team_id INTEGER,
+    winner_team_id INTEGER, /* set with trigger on update of games table */
     CONSTRAINT pk_pgame PRIMARY KEY (game_id),
     CONSTRAINT fk_team_1 FOREIGN KEY (team_1_id) REFERENCES Teams(team_id),
     CONSTRAINT fk_team_2 FOREIGN KEY (team_2_id) REFERENCES Teams(team_id)
 );
 
-CREATE TABLE PlayerStats (
+CREATE TABLE PlayerStats ( /* created after insert into games for each player on each team, updated later */
     game_id INTEGER NOT NULL,
     player_id INTEGER NOT NULL,
     kills INTEGER,
