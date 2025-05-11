@@ -1,4 +1,3 @@
-delimiter %%
 /* procedure here to populate playerstats table given a game id */
 
 CREATE TRIGGER set_winner
@@ -10,5 +9,4 @@ BEGIN
     ELSEIF NEW.team_2_score > NEW.team_1_score THEN
         SET NEW.winner_team_id = NEW.team_1_id;
     END IF;
-END; %%
-delimiter ;
+END;
