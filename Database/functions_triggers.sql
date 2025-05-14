@@ -7,6 +7,6 @@ BEGIN
     IF NEW.team_1_score > NEW.team_2_score THEN
         SET NEW.winner_team_id = NEW.team_1_id;
     ELSEIF NEW.team_2_score > NEW.team_1_score THEN
-        SET NEW.winner_team_id = NEW.team_1_id;
+        SET NEW.winner_team_id = NEW.team_2_id;
     END IF;
 END;
