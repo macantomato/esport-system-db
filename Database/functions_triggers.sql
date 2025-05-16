@@ -1,6 +1,18 @@
-/* procedure here to populate playerstats table given a game id */
+-- procedure to get all players ids from a game
+DROP PROCEDURE IF EXISTS prGetGamePlayers;
+CREATE PROCEDURE prGetGamePlayers (IN _game_id INTEGER)
+BEGIN
+    SELECT player_id
+    FROM Games JOIN PlayerTeamHistory ON team_id IN (team_1_id, team_2_id)
+    WHERE
+        game_id = _game_id AND
+        join_date <= game_date AND
+        (leave_date IS NULL OR leave_date > game_date);
+END;
 
-CREATE TRIGGER set_winner
+-- trigger for calculating winner of game
+DROP TRIGGER IF EXISTS trSetWinner;
+CREATE TRIGGER trSetWinner
 BEFORE INSERT ON Games
 FOR EACH ROW
 BEGIN
