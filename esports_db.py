@@ -1,5 +1,11 @@
 import mysql.connector
 from mysql.connector import errorcode
+from flask import (
+    Flask,
+    render_template,
+    request,
+    jsonify
+)
 
 connection = mysql.connector.connect(
     host="localhost",
@@ -9,12 +15,27 @@ connection = mysql.connector.connect(
 DB_NAME = "esports_db"
 cursor = connection.cursor()
 
+app = Flask(__name__)
+
+#help functions
 def execute_sql_file(filepath):
     with open(filepath, "r") as file:
         content = file.read()
         cursor.execute(content)
         file.close()
 
+#flask functions
+@app.route("/")
+def intro():
+    return render_template("intro.html")
+
+@app.post("/test")
+def test():
+    data = request.get_json()
+    print(data)
+    return jsonify({"message": [1, 2, 3]})
+
+#sql functions
 def setup():
     #create and/or use db
     try:
@@ -28,5 +49,7 @@ def setup():
             #create triggers, functions, and procedures
             execute_sql_file("Database/functions_triggers.sql")
 
+#main
 if __name__ == "__main__":
     setup()
+    app.run()
