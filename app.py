@@ -15,14 +15,6 @@ def add_team():
     "Connect to db and insert"
     return jsonify({'status' : 'testing'})
 
-@app.route('/test', methods=['POST'])
-def test():
-    data = request.get_json() or {}
-    return jsonify({
-        'status': 'ok',
-        'received': data
-    })
-
 @app.route('/players', methods=['POST'])
 def add_player():
     data = request.get_json()
