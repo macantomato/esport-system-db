@@ -35,6 +35,20 @@ def test():
     print(data)
     return jsonify({"message": [1, 2, 3]})
 
+@app.post("/players")
+def add_player():
+    data    = request.get_json()
+    name    = data["name"]
+    country = data["country"]
+
+    cursor.execute(
+      "INSERT INTO Players (name, country) VALUES (%s, %s)",
+      (name, country)
+    )
+    connection.commit()
+    new_id = cursor.lastrowid
+    return jsonify({ "player_id": new_id })
+
 #sql functions
 def setup():
     #create and/or use db
