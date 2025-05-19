@@ -15,7 +15,7 @@ CREATE TABLE Teams (
 CREATE TABLE TeamPlayers (
     team_id INTEGER NOT NULL,
     player_id INTEGER NOT NULL,
-    CONSTRAINT pk_history PRIMARY KEY (team_id, player_id),
+    CONSTRAINT pk_teamplayers PRIMARY KEY (team_id, player_id),
     CONSTRAINT fk_team FOREIGN KEY (team_id) REFERENCES Teams(team_id),
     CONSTRAINT fk_player FOREIGN KEY (player_id) REFERENCES Players(player_id)
 );
