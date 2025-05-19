@@ -12,6 +12,7 @@ BEGIN
     ELSE
         COMMIT;
         SELECT 1; -- true
+    END IF;
 END;
 
 -- procedure to get all players ids from a game
