@@ -12,12 +12,10 @@ CREATE TABLE Teams (
     CONSTRAINT pk_team PRIMARY KEY (team_id)
 );
 
-CREATE TABLE PlayerTeamHistory ( -- added with procedure (in chronological order for each player)
+CREATE TABLE TeamPlayers (
     team_id INTEGER NOT NULL,
     player_id INTEGER NOT NULL,
-    join_date DATE NOT NULL,
-    leave_date DATE, -- does not need to be set for player currently on team
-    CONSTRAINT pk_history PRIMARY KEY (player_id, join_date),
+    CONSTRAINT pk_history PRIMARY KEY (team_id, player_id),
     CONSTRAINT fk_team FOREIGN KEY (team_id) REFERENCES Teams(team_id),
     CONSTRAINT fk_player FOREIGN KEY (player_id) REFERENCES Players(player_id)
 );
