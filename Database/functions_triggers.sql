@@ -1,10 +1,10 @@
 -- procedure to add player to team, only one player per team
-DROP TRIGGER IF EXISTS prAddTeamPlayers;
-CREATE PROCEDURE prAddTeamPlayers (IN _team_id, IN _player_id)
+DROP PROCEDURE IF EXISTS prAddTeamPlayers;
+CREATE PROCEDURE prAddTeamPlayers (IN _team_id INTEGER, IN _player_id INTEGER)
 BEGIN
     START TRANSACTION;
     INSERT INTO TeamPlayers (team_id, player_id)
-    VALUES (_team_idm _player_id);
+    VALUES (_team_id, _player_id);
     -- check so a player isnt on multiple teams
     IF (SELECT count(*) FROM TeamPlayers WHERE player_id = _player_id) > 1 THEN
         ROLLBACK;

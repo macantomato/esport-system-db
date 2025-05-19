@@ -5,11 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Players - Esport Team Viwer</title>
 </head>
-<body>
+<body onload="getPlayers()">
     <h1>Players Page</h1>
     <nav>
         <a href="{{ url_for('intro') }}">Home Page</a>
-      </nav>
+    </nav>
+    <button onclick="getPlayers()">Refresh</button>
+    <div id="player_input">
+        <input type="text" id="player_name" placeholder="Enter Player Name" />
+        <label for="player_name">Name:</label>
+
+        <input type="text" id="player_country" placeholder="Enter Country" />
+        <label for="player_country">Country:</label>
+
+        <button onclick="addPlayer()">Add Player</button>
+    </div>
+    <div id="player_list">
+        <!-- empty to begin with -->
+    </div>
     <script src="../static/script.js"></script>
 </body>
 </html>
