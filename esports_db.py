@@ -74,6 +74,17 @@ def get_players():
         for pId, name, country in data
     ]
     return jsonify(players)
+
+#flask games page
+@app.route('/games-page')
+def games_page():
+    return render_template('games.html')
+
+#flask teams page
+@app.route('/teams-page')
+def teams_page():
+    return render_template('teams.html')
+
 #sql functions
 def setup():
     #create and/or use db
