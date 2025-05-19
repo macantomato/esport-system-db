@@ -49,6 +49,31 @@ def add_player():
     new_id = cursor.lastrowid
     return jsonify({ "player_id": new_id })
 
+#flask player page
+@app.route('/players-page')
+def players_page():
+    return render_template('players.html')
+
+@app.route('/get_players' , methods=['POST'])
+def get_players():
+    #fresh connection incase of updates in db
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root",
+        database=DB_NAME
+    )
+    cursor = conn.cursor()
+    cursor.execute("SELECT player_id, name, country FROM Players;")
+    data=cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    players = [
+        {"player_id": pId, "name": name, "country": country}
+        for pId, name, country in data
+    ]
+    return jsonify(players)
 #sql functions
 def setup():
     #create and/or use db
