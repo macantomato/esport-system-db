@@ -3,26 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Players - Esport Team Viwer</title>
+    <title>Players - Esports DB</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body onload="getPlayers()">
     <h1>Players Page</h1>
     <nav>
         <a href="{{ url_for('intro') }}">Home Page</a>
     </nav>
-    <button onclick="getPlayers()">Refresh</button>
-    <div id="player_input">
-        <input type="text" id="player_name" placeholder="Enter Player Name" />
+    <div class="input" id="player_input">
         <label for="player_name">Name:</label>
+        <input type="text" id="player_name" placeholder="Enter player name" />
 
-        <input type="text" id="player_country" placeholder="Enter Country" />
+        <label for="player_age">Age:</label>
+        <input type="number" id="player_age" placeholder="Enter player age" />
+
         <label for="player_country">Country:</label>
+        <input type="text" id="player_country" placeholder="Enter country" />
 
         <button onclick="addPlayer()">Add Player</button>
     </div>
-    <div id="player_list">
+    <div class="list" id="player_list">
         <!-- empty to begin with -->
     </div>
-    <script src="../static/script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

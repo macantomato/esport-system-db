@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Esports DB</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <h1>Hello World!</h1>
@@ -12,6 +13,6 @@
       <a href="{{ url_for('teams_page') }}">Teams Page</a>
       <a href="{{ url_for('games_page') }}">Games Page</a>
     </nav>
-    <script src="../static/script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 CREATE TABLE Players (
     player_id INTEGER NOT NULL AUTO_INCREMENT,
     name VARCHAR(30) NOT NULL,
+    age INTEGER NOT NULL,
     country VARCHAR(30) NOT NULL,
     CONSTRAINT pk_player PRIMARY KEY (player_id)
 );

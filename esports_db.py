@@ -48,18 +48,23 @@ def teams_page():
 def add_player():
     data = request.get_json()
     name = data["name"]
+    age = data["age"]
     country = data["country"]
-    new_id = sql_add_player(name, country)
-    print(f"Added player: {new_id}, {name}, {country}")
+    new_id = sql_add_player(name, age, country)
+    print(f"Added player: {new_id}, {name}, {age}, {country}")
     return jsonify({"player_id": new_id})
 
 
 @app.post('/post/get_players')
 def get_players():
-    data = sql_get_players()
+    param = request.get_json(silent=True)
+    if not param:
+        data = sql_get_players()
+    else:
+        data = sql_get_players(param["sort"], param["reverse"])
     players = [
-        {"player_id": pId, "name": name, "country": country}
-        for pId, name, country in data
+        {"player_id": pId, "name": name, "age": age, "country": country}
+        for pId, name, age, country in data
     ]
     print(f"Get players: {str(players)}")
     return jsonify(players)
@@ -79,13 +84,17 @@ def sql_setup():
             #create triggers, functions, and procedures
             execute_sql_file("Database/functions_triggers.sql")
 
-def sql_add_player(name: str, country: str) -> int:
-    cursor.execute(f"INSERT INTO Players (name, country) VALUES ('{name}', '{country}');")
+def sql_add_player(name, age, country):
+    cursor.execute(f"INSERT INTO Players (name, age, country) VALUES ('{name}', {age}, '{country}');")
     connection.commit()
     return cursor.lastrowid
 
-def sql_get_players() -> list[dict]:
-    cursor.execute("SELECT * FROM Players;")
+def sql_get_players(sort = None, reverse = None):
+    if not sort or reverse is None:
+        cursor.execute("SELECT * FROM Players;")
+    else:
+        print(f"SELECT * FROM Players ORDER BY {sort} {'ASC' if reverse else 'DESC'};")
+        cursor.execute(f"SELECT * FROM Players ORDER BY {sort} {'ASC' if reverse else 'DESC'};")
     data = cursor.fetchall()
     return data
 

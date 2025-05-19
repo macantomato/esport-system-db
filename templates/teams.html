@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teams - Esport Team Viwer</title>
+    <title>Teams - Esports DB</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <h1>Teams Page</h1>
     <nav>
         <a href="{{ url_for('intro') }}">Home Page</a>
-      </nav>
-    <script src="../static/script.js"></script>
+    </nav>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
