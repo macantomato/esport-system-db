@@ -1,17 +1,21 @@
 -- procedure to add player to team, only one player per team
-DROP PROCEDURE IF EXISTS prAddTeamPlayers;
-CREATE PROCEDURE prAddTeamPlayers (IN _team_id INTEGER, IN _player_id INTEGER)
+DROP PROCEDURE IF EXISTS prAddTeamPlayer;
+CREATE PROCEDURE prAddTeamPlayer (IN _team_id INTEGER, IN _player_id INTEGER, OUT _result INTEGER)
 BEGIN
-    START TRANSACTION;
-    INSERT INTO TeamPlayers (team_id, player_id)
-    VALUES (_team_id, _player_id);
-    -- check so a player isnt on multiple teams
-    IF (SELECT count(*) FROM TeamPlayers WHERE player_id = _player_id) > 1 THEN
-        ROLLBACK;
+    IF (SELECT count(*) FROM Players CROSS JOIN Teams WHERE player_id = _player_id AND team_id = _team_id) = 0 THEN
         SELECT 0; -- false
     ELSE
-        COMMIT;
-        SELECT 1; -- true
+        START TRANSACTION;
+        INSERT INTO TeamPlayers (team_id, player_id)
+        VALUES (_team_id, _player_id);
+        -- check so a player isnt on multiple teams
+        IF (SELECT count(*) FROM TeamPlayers WHERE player_id = _player_id) > 1 THEN
+            ROLLBACK;
+            SELECT 0; -- false
+        ELSE
+            COMMIT;
+            SELECT 1; -- true
+        END IF;
     END IF;
 END;
 
@@ -22,6 +26,17 @@ BEGIN
     SELECT player_id
     FROM Games JOIN TeamPlayers ON team_id IN (team_1_id, team_2_id)
     WHERE game_id = _game_id;
+END;
+
+-- function to get team_id from a player_id
+DROP FUNCTION IF EXISTS getPlayerTeam;
+CREATE FUNCTION getPlayerTeam (_player_id INTEGER)
+RETURNS INTEGER
+DETERMINISTIC READS SQL DATA
+BEGIN
+	DECLARE _team_id INTEGER;
+    SET _team_id = (SELECT team_id FROM TeamPlayers WHERE player_id = _player_id);
+    RETURN _team_id;
 END;
 
 -- trigger for calculating winner of game

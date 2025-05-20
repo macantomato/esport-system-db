@@ -22,6 +22,7 @@ def execute_sql_file(filepath):
     with open(filepath, "r") as file:
         content = file.read()
         cursor.execute(content)
+        connection.commit()
         file.close()
 
 #flask functions ---------------------------------------------------------------------
@@ -29,19 +30,18 @@ def execute_sql_file(filepath):
 def intro():
     return render_template("intro.html")
 
-@app.route('/players-page')
+@app.route("/players-page")
 def players_page():
-    return render_template('players.html')
+    return render_template("players.html")
 
 #flask games page
-@app.route('/games-page')
+@app.route("/games-page")
 def games_page():
     return render_template('games.html')
 
-#flask teams page
-@app.route('/teams-page')
+@app.route("/teams-page")
 def teams_page():
-    return render_template('teams.html')
+    return render_template("teams.html")
 
 #flask sql requests ---------------------------------------------------------------------
 @app.post("/post/add_player")
@@ -54,8 +54,7 @@ def add_player():
     print(f"Added player: {new_id}, {name}, {age}, {country}")
     return jsonify({"player_id": new_id})
 
-
-@app.post('/post/get_players')
+@app.post("/post/get_players")
 def get_players():
     param = request.get_json(silent=True)
     if not param:
@@ -63,11 +62,82 @@ def get_players():
     else:
         data = sql_get_players(param["sort"], param["reverse"])
     players = [
-        {"player_id": pId, "name": name, "age": age, "country": country}
-        for pId, name, age, country in data
+        {"player_id": player_id, "name": name, "age": age, "country": country}
+        for (player_id, name, age, country) in data
     ]
-    print(f"Get players: {str(players)}")
+    #print(f"Get players: {str(players)}")
     return jsonify(players)
+
+@app.post("/post/get_player_info")
+def get_player_info():
+    param = request.get_json()
+    player_id = param["player_id"]
+    data = sql_get_player_info(player_id)
+    stats_keys = [
+        "player_id",
+        "player_name",
+        "age",
+        "country",
+        "team_name",
+        "num_games",
+        "total_kills",
+        "total_deaths",
+        "avg_damage",
+        "avg_healing"
+    ]
+    player_info = dict(zip(stats_keys, data))
+    return jsonify(player_info)
+
+@app.post("/post/add_player_to_team")
+def add_player_to_team():
+    data = request.get_json()
+    team_id = data["team_id"]
+    player_id = data["player_id"]
+    try:
+        result = sql_add_player_to_team(team_id, player_id)
+    except:
+        result = 0
+    print(f"Add player to team result: {result}")
+    return jsonify({"result": result})
+
+@app.post("/post/add_team")
+def add_team():
+    data = request.get_json()
+    name = data["name"]
+    region = data["region"]
+    new_id = sql_add_team(name, region)
+    print(f"Added team: {new_id}, {name}, {region}")
+    return jsonify({"team_id": new_id})
+
+@app.post("/post/get_teams")
+def get_teams():
+    param = request.get_json(silent=True)
+    if not param:
+        data = sql_get_teams()
+    else:
+        data = sql_get_teams(param["sort"], param["reverse"])
+    teams = [
+        {"team_id": team_id, "name": name, "region": region}
+        for (team_id, name, region) in data
+    ]
+    #print(f"Get Teams: {str(teams)}")
+    return jsonify(teams)
+
+@app.post("/post/get_team_info")
+def get_team_info():
+    param = request.get_json()
+    team_id = param["team_id"]
+    data = sql_get_team_info(team_id)
+    stats_keys = [
+        "team_id",
+        "team_name",
+        "region",
+        "players",
+        "num_games",
+        "num_wins",
+    ]
+    team_info = dict(zip(stats_keys, data))
+    return jsonify(team_info)
 
 #sql functions ---------------------------------------------------------------------
 def sql_setup():
@@ -77,15 +147,17 @@ def sql_setup():
     except mysql.connector.Error as e:
         if e.errno == errorcode.ER_BAD_DB_ERROR:
             print("Creating database")
-            cursor.execute(f"CREATE DATABASE {DB_NAME}")
+            cursor.execute(f"CREATE DATABASE {DB_NAME};")
             cursor.execute(f"USE {DB_NAME};")
             #create tables
             execute_sql_file("Database/tables.sql")
             #create triggers, functions, and procedures
             execute_sql_file("Database/functions_triggers.sql")
+            #insert example data
+            execute_sql_file("Database/data.sql")
 
 def sql_add_player(name, age, country):
-    cursor.execute(f"INSERT INTO Players (name, age, country) VALUES ('{name}', {age}, '{country}');")
+    cursor.execute("INSERT INTO Players (name, age, country) VALUES (%s, %s, %s);", (name, age, country))
     connection.commit()
     return cursor.lastrowid
 
@@ -93,10 +165,64 @@ def sql_get_players(sort = None, reverse = None):
     if not sort or reverse is None:
         cursor.execute("SELECT * FROM Players;")
     else:
-        print(f"SELECT * FROM Players ORDER BY {sort} {'ASC' if reverse else 'DESC'};")
         cursor.execute(f"SELECT * FROM Players ORDER BY {sort} {'ASC' if reverse else 'DESC'};")
     data = cursor.fetchall()
     return data
+
+def sql_get_player_info(player_id):
+    data = []
+    cursor.execute(f"SELECT * FROM Players WHERE player_id = {player_id};")
+    data.extend(cursor.fetchone())
+    try:
+        cursor.execute(f"SELECT name FROM Teams WHERE team_id = getPlayerTeam({player_id});")
+        data.extend(cursor.fetchone())
+        cursor.execute(f"SELECT count(*), CAST(sum(kills) AS UNSIGNED), CAST(sum(deaths) AS UNSIGNED), CAST(avg(damage) AS UNSIGNED), CAST(avg(healing) AS UNSIGNED) FROM PlayerStats WHERE player_id = {player_id};")
+        data.extend(cursor.fetchone())
+    except:
+        data.extend([None] * 6)
+    return data
+
+def sql_add_player_to_team(team_id, player_id):
+    cursor.callproc("prAddTeamPlayer", (team_id, player_id))
+    for result in cursor.stored_results():
+        data = result.fetchone()[0]
+    return data
+
+def sql_add_team(name, region):
+    cursor.execute("INSERT INTO Teams (name, region) VALUES (%s, %s);", (name, region))
+    connection.commit()
+    return cursor.lastrowid
+
+def sql_get_teams(sort = None, reverse = None):
+    if not sort or reverse is None:
+        cursor.execute("SELECT * FROM Teams;")
+    else:
+        cursor.execute(f"SELECT * FROM Teams ORDER BY {sort} {'ASC' if reverse else 'DESC'};")
+    data = cursor.fetchall()
+    return data
+
+def sql_get_team_info(team_id):
+    data = []
+    cursor.execute(f"SELECT * FROM Teams WHERE team_id = {team_id}")
+    data.extend(cursor.fetchone())
+    try:
+        cursor.execute(f"SELECT name FROM Players p JOIN TeamPlayers tp ON p.player_id = tp.player_id WHERE team_id = {team_id}")
+        data.append([name for (name,) in cursor.fetchall()])
+        cursor.execute(f"SELECT count(*) FROM Games WHERE {team_id} IN (team_1_id, team_2_id)")
+        data.extend(cursor.fetchone())
+        cursor.execute(f"SELECT count(*) FROM Games WHERE winner_team_id = {team_id}")
+        data.extend(cursor.fetchone())
+    except:
+        data.extend([None] * 3)
+    return data
+
+# def sql_get_games(sort = None, reverse = None):
+#     if not sort or reverse is None:
+#         cursor.execute("SELECT * FROM Games;")
+#     else:
+#         cursor.execute(f"SELECT * FROM Games ORDER BY {sort} {'ASC' if reverse else 'DESC'};")
+#     data = cursor.fetchall()
+#     return data
 
 #main ---------------------------------------------------------------------
 if __name__ == "__main__":

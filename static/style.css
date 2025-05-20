@@ -1,9 +1,65 @@
 html {
+    text-align: center;
     font-family: Arial, Helvetica, sans-serif;
+    background-color: whitesmoke;
 }
 
-table, tr, th {
+nav {
+    display: inline-block;
+    border-bottom: 1px solid black;
+    width: 50%;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 1fr 2fr 2fr 1fr;
+    grid-template-rows: min-content 600px;
+    grid-template-areas:
+        ". input area2 ."
+        ". list stats .";
+    gap: 20px;
+    margin-top: 24px;
+}
+
+.input {
+    grid-area: input;
+    text-align: center;
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+    background-color: lightgray;
+    padding-bottom: 16px;
+}
+.input input, select, button {
+    padding: 4px;
+    align-self: center;
+    width: fit-content;
+}
+.area2 {
+    grid-area: area2;
+}
+
+.list {
+    grid-area: list;
+    background-color: lightgray;
+    height: 100%;
+    overflow-y: scroll;
+}
+.list table {
+    width: 100%;
+    min-width: min-content;
+    border-collapse: collapse;
+}
+.list tr, th {
+    padding: 4px;
     font-weight: normal;
     border: 1px solid black;
-    border-collapse: collapse;
+}
+
+.stats {
+    grid-area: stats;
+    min-width: min-content;
+    text-align: left;
+    padding: 24px;
+    background-color: lightgray;
 }
