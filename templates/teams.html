@@ -6,7 +6,7 @@
     <title>Esports DB - Teams</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body onload="getTeams()">
+<body onload="getTeams()" onclick="clearStatus()">
     <h1>Esports DB - Teams</h1>
     <nav>
       <a href="{{ url_for('intro') }}">Home</a>
@@ -14,6 +14,7 @@
       <a href="{{ url_for('teams_page') }}">Teams</a>
       <a href="{{ url_for('games_page') }}">Games</a>
     </nav>
+    <p id="status"></p>
     <div class="container">
         <div class="input" id="team_input">
             <h3>Add Team</h3>

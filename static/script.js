@@ -1,14 +1,20 @@
-playerSortDict = {
+playersSortDict = {
     "player_id": false,
     "name": false,
     "age": false,
     "country": false
 }
-
 teamsSortDict = {
     "team_id": false,
     "name": false,
     "region": false
+}
+gamesSortDict = {
+    "game_id": false,
+    "game_date": false,
+    "abs(team_1_score - team_2_score)": false,
+    "team_1_name": false,
+    "team_2_name": false
 }
 
 function postRequest(url, callback, data = null) {
@@ -21,7 +27,7 @@ function postRequest(url, callback, data = null) {
     .then(result => callback(result))
 }
 
-// Players page -------------------------------------
+// Players page ------------------------------------------------------------
 function addPlayer() {
     var name = document.getElementById("player_name").value.trim()
     var age = document.getElementById("player_age").value
@@ -38,7 +44,7 @@ function addPlayer() {
     };
 
     postRequest("/post/add_player", (result) => {
-        console.log("Added player: " + result["player_id"]);
+        setStatus("Added Player (ID: " + result["player_id"] + ")");
         document.getElementById("player_name").value = "";
         document.getElementById("player_age").value = "";
         document.getElementById("player_country").selectedIndex = 0
@@ -54,10 +60,10 @@ function getPlayers(sort = null) {
             <table>
                 <thead>
                     <tr>
-                        <th onclick="handlePlayerSort('player_id')" style="cursor: pointer"><b>ID</b></th>
-                        <th onclick="handlePlayerSort('name')" style="cursor: pointer"><b>Name</b></th>
-                        <th onclick="handlePlayerSort('age')" style="cursor: pointer"><b>Age</b></th>
-                        <th onclick="handlePlayerSort('country')" style="cursor: pointer"><b>Country</b></th>
+                        <th onclick="handleplayersSort('player_id')" style="cursor: pointer"><b>ID</b></th>
+                        <th onclick="handleplayersSort('name')" style="cursor: pointer"><b>Name</b></th>
+                        <th onclick="handleplayersSort('age')" style="cursor: pointer"><b>Age</b></th>
+                        <th onclick="handleplayersSort('country')" style="cursor: pointer"><b>Country</b></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -129,11 +135,6 @@ function getPlayerInfo(player_id) {
     }, {"player_id": player_id})
 }
 
-function handlePlayerSort(key) {
-    getPlayers({"sort": key, "reverse": playerSortDict[key]});
-    playerSortDict[key] = !playerSortDict[key];
-}
-
 function openPlayerEdit(player_id, name, age, country) {
     var listHTML = document.getElementById("player_country").innerHTML
     var index = listHTML.indexOf(`>${country}<`)
@@ -178,10 +179,15 @@ function editPlayer(player_id) {
     };
 
     postRequest("/post/edit_player", (result) => {
-        console.log("Edited player: " + result["player_id"]);
+        setStatus("Edited Player (ID: " + result["player_id"] + ")");
         closeEdit();
         getPlayers();
     }, data);
+}
+
+function handleplayersSort(key) {
+    getPlayers({"sort": key, "reverse": playersSortDict[key]});
+    playersSortDict[key] = !playersSortDict[key];
 }
 
 // Teams page ------------------------------------------------------------
@@ -204,6 +210,7 @@ function addTeamPlayer() {
             alert("Failed adding player to team!")
             return
         }
+        setStatus("Added Player to Team")
         document.getElementById("team_id").value = "";
         document.getElementById("player_id").value = "";
     }, data)
@@ -223,7 +230,7 @@ function addTeam() {
     };
 
     postRequest("/post/add_team", (result) => {
-        console.log("Added Team: " + result["team_id"]);
+        setStatus("Added Team (ID: " + result["team_id"] + ")");
         document.getElementById("team_name").value = "";
         document.getElementById("team_region").selectedIndex = 0;
         getTeams();
@@ -238,9 +245,9 @@ function getTeams(sort = null) {
             <table>
                 <thead>
                     <tr>
-                        <th onclick="handleTeamSort('team_id')" style="cursor: pointer"><b>ID</b></th>
-                        <th onclick="handleTeamSort('name')" style="cursor: pointer"><b>Name</b></th>
-                        <th onclick="handleTeamSort('region')" style="cursor: pointer"><b>Region</b></th>
+                        <th onclick="handleTeamsSort('team_id')" style="cursor: pointer"><b>ID</b></th>
+                        <th onclick="handleTeamsSort('name')" style="cursor: pointer"><b>Name</b></th>
+                        <th onclick="handleTeamsSort('region')" style="cursor: pointer"><b>Region</b></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -313,11 +320,6 @@ function getTeamInfo(team_id) {
     }, {"team_id": team_id})
 }
 
-function handleTeamSort(key) {
-    getTeams({"sort": key, "reverse": teamsSortDict[key]});
-    teamsSortDict[key] = !teamsSortDict[key];
-}
-
 function openTeamEdit(team_id, name, region) {
     innerHTML = `
         <h3>Edit Team</h3>
@@ -359,10 +361,62 @@ function editTeam(team_id) {
     };
 
     postRequest("/post/edit_team", (result) => {
-        console.log("Edited Team: " + result["team_id"]);
+        setStatus("Edited Team  (ID: " + result["team_id"] + ")");
         closeEdit();
         getTeams();
     }, data);
+}
+
+function handleTeamsSort(key) {
+    getTeams({"sort": key, "reverse": teamsSortDict[key]});
+    teamsSortDict[key] = !teamsSortDict[key];
+}
+
+//Games page ------------------------------------------------------------
+function getGames(sort = null) {
+    postRequest("/post/get_games", (result) => {
+        console.log("Get games:");
+        console.log(result)
+        var innerHTML = `
+            <table>
+                <thead>
+                    <tr>
+                        <th onclick="handleGamesSort('game_id')" style="cursor: pointer"><b>ID</b></th>
+                        <th onclick="handleGamesSort('game_date')" style="cursor: pointer"><b>Date</b></th>
+                        <th onclick="handleGamesSort('team_1_name')" style="cursor: pointer"><b>Team 1</b></th>
+                        <th onclick="handleGamesSort('abs(team_1_score - team_2_score)')" style="cursor: pointer"><b>Score</b></th>
+                        <th onclick="handleGamesSort('team_2_name')" style="cursor: pointer"><b>Team 2</b></th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        result.forEach(item => {
+            var winner_is_team_1 = item["winner_team_id"] == item["team_1_id"]
+            var date = new Date(item["game_date"])
+            innerHTML += `
+                <tr onclick="getGameInfo(${item["game_id"]})" style="cursor: pointer">
+                    <th>${item["game_id"]}</th>
+                    <th>${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}</th>
+                    <th>${winner_is_team_1 ? "<b>" : ""}${item["team_1_name"]}${winner_is_team_1 ? "</b>" : ""}</th>
+                    <th>
+                        ${winner_is_team_1 ? "<b>" : ""}${item["team_1_score"]}${winner_is_team_1 ? "</b>" : ""} -
+                        ${winner_is_team_1 ? "" : "<b>"}${item["team_2_score"]}${winner_is_team_1 ? "" : "</b>"}
+                    </th>
+                    <th>${winner_is_team_1 ? "" : "<b>"}${item["team_2_name"]}${winner_is_team_1 ? "" : "</b>"}</th>
+                </tr>
+            `;
+        });
+        innerHTML += `
+                </tbody>
+            </table>
+        `;
+        document.getElementById("game_list").innerHTML = innerHTML;
+    }, sort);
+}
+
+function handleGamesSort(key) {
+    getGames({"sort": key, "reverse": gamesSortDict[key]});
+    gamesSortDict[key] = !gamesSortDict[key];
 }
 
 //General
@@ -372,4 +426,12 @@ function closeStats() {
 
 function closeEdit() {
     document.getElementsByClassName("area2")[0].innerHTML = "";
+}
+
+function setStatus(text) {
+    document.getElementById("status").textContent = text
+}
+
+function clearStatus() {
+    document.getElementById("status").textContent = ""
 }

@@ -160,6 +160,30 @@ def edit_team():
     sql_edit_team(team_id, name, region)
     return jsonify({"team_id": team_id})
 
+@app.post("/post/get_games")
+def get_games():
+    param = request.get_json(silent=True)
+    if not param:
+        data = sql_get_games()
+    else:
+        data = sql_get_games(param["sort"], param["reverse"])
+    games = [
+        {
+            "game_id": game_id,
+            "game_date": date,
+            "team_1_id": team_1,
+            "team_2_id": team_2,
+            "team_1_score": team_1_score,
+            "team_2_score": team_2_score,
+            "winner_team_id": winner_team,
+            "team_1_name": team_1_name,
+            "team_2_name": team_2_name
+        }
+        for (game_id, date, team_1, team_2, team_1_score, team_2_score, winner_team, team_1_name, team_2_name) in data
+    ]
+    #print(f"Get Games: {str(games)}")
+    return jsonify(games)
+
 #sql functions ---------------------------------------------------------------------
 def sql_setup():
     #create and/or use db
@@ -245,13 +269,13 @@ def sql_edit_team(team_id, name, region):
     cursor.execute("UPDATE Teams SET name = %s, region = %s WHERE team_id = %s", (name, region, team_id))
     connection.commit()
 
-# def sql_get_games(sort = None, reverse = None):
-#     if not sort or reverse is None:
-#         cursor.execute("SELECT * FROM Games;")
-#     else:
-#         cursor.execute(f"SELECT * FROM Games ORDER BY {sort} {'ASC' if reverse else 'DESC'};")
-#     data = cursor.fetchall()
-#     return data
+def sql_get_games(sort = None, reverse = None):
+    if not sort or reverse is None:
+        cursor.execute("SELECT *, getTeamName(team_1_id) AS team_1_name, getTeamName(team_2_id) AS team_2_name FROM Games;")
+    else:
+        cursor.execute(f"SELECT *, getTeamName(team_1_id) AS team_1_name, getTeamName(team_2_id) AS team_2_name FROM Games ORDER BY {sort} {'ASC' if reverse else 'DESC'};")
+    data = cursor.fetchall()
+    return data
 
 #main ---------------------------------------------------------------------
 if __name__ == "__main__":

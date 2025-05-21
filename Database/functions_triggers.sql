@@ -45,6 +45,19 @@ BEGIN
 END %%
 delimiter ;
 
+-- function to get name from a team_id
+DROP FUNCTION IF EXISTS getTeamName;
+delimiter %%
+CREATE FUNCTION getTeamName (_team_id INTEGER)
+RETURNS VARCHAR(30)
+DETERMINISTIC READS SQL DATA
+BEGIN
+	DECLARE _name VARCHAR(30);
+    SET _name = (SELECT name FROM Teams WHERE team_id = _team_id);
+    RETURN _name;
+END %%
+delimiter ;
+
 -- trigger for calculating winner of game
 DROP TRIGGER IF EXISTS trSetWinner;
 delimiter %%
