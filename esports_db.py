@@ -102,15 +102,28 @@ def edit_player():
 
 @app.post("/post/add_player_to_team")
 def add_player_to_team():
-    data = request.get_json()
-    team_id = data["team_id"]
-    player_id = data["player_id"]
+    param = request.get_json()
+    team_id = param["team_id"]
+    player_id = param["player_id"]
     try:
         result = sql_add_player_to_team(team_id, player_id)
     except:
         result = 0
     print(f"Add player to team result: {result}")
     return jsonify({"result": result})
+
+@app.post("/post/get_both_team_players")
+def get_both_team_players():
+    param = request.get_json()
+    team_1_id = param["team_1_id"]
+    team_2_id = param["team_2_id"]
+    data = sql_get_both_team_players(team_1_id, team_2_id)
+    keys = [
+        "team_1",
+        "team_2"
+    ]
+    both_teams = dict(zip(keys, data))
+    return jsonify(both_teams)
 
 @app.post("/post/add_team")
 def add_team():
@@ -160,6 +173,11 @@ def edit_team():
     remove_id = param["remove"]
     data = sql_edit_team(team_id, name, region, remove_id)
     return jsonify({"result": data})
+
+@app.post("/post/add_game")
+def add_game():
+    param = request.get_json()
+    print(param)
 
 @app.post("/post/get_games")
 def get_games():
@@ -250,7 +268,7 @@ def sql_get_player_info(player_id):
     return data
 
 def sql_edit_player(player_id, name, age, country):
-    cursor.execute("UPDATE Players SET name = %s, age = %s, country = %s WHERE player_id = %s", (name, age, country, player_id))
+    cursor.execute("UPDATE Players SET name = %s, age = %s, country = %s WHERE player_id = %s;", (name, age, country, player_id))
     connection.commit()
 
 def sql_add_player_to_team(team_id, player_id):
@@ -261,6 +279,22 @@ def sql_add_player_to_team(team_id, player_id):
         connection.commit()
     else:
         connection.rollback()
+    return data
+
+def sql_get_both_team_players(team_1_id, team_2_id):
+    data = []
+    if (team_1_id):
+        cursor.callproc("prGetTeamPlayers", (team_1_id,))
+        for result in cursor.stored_results():
+            data.append(result.fetchall())
+    else:
+        data.append(None)
+    if (team_2_id):
+        cursor.callproc("prGetTeamPlayers", (team_2_id,))
+        for result in cursor.stored_results():
+            data.append(result.fetchall())
+    else:
+        data.append(None)
     return data
 
 def sql_add_team(name, region):
@@ -278,21 +312,22 @@ def sql_get_teams(sort = None, reverse = None):
 
 def sql_get_team_info(team_id):
     data = []
-    cursor.execute(f"SELECT * FROM Teams WHERE team_id = {team_id}")
+    cursor.execute(f"SELECT * FROM Teams WHERE team_id = {team_id};")
     data.extend(cursor.fetchone())
     try:
-        cursor.execute(f"SELECT p.player_id, p.name FROM Players p JOIN TeamPlayers tp ON p.player_id = tp.player_id WHERE team_id = {team_id}")
-        data.append(cursor.fetchall())
-        cursor.execute(f"SELECT count(*) FROM Games WHERE {team_id} IN (team_1_id, team_2_id)")
+        cursor.callproc("prGetTeamPlayers", (team_id,))
+        for result in cursor.stored_results():
+            data.append(result.fetchall())
+        cursor.execute(f"SELECT count(*) FROM Games WHERE {team_id} IN (team_1_id, team_2_id);")
         data.extend(cursor.fetchone())
-        cursor.execute(f"SELECT count(*) FROM Games WHERE winner_team_id = {team_id}")
+        cursor.execute(f"SELECT count(*) FROM Games WHERE winner_team_id = {team_id};")
         data.extend(cursor.fetchone())
-    except:
+    except Exception as e:
         data.extend([None] * 3)
     return data
 
 def sql_edit_team(team_id, name, region, remove_id):
-    cursor.execute("UPDATE Teams SET name = %s, region = %s WHERE team_id = %s", (name, region, team_id))
+    cursor.execute("UPDATE Teams SET name = %s, region = %s WHERE team_id = %s;", (name, region, team_id))
     if remove_id is not None:
         cursor.callproc("prDeleteTeamPlayer", (team_id, remove_id))
         for result in cursor.stored_results():
@@ -305,6 +340,9 @@ def sql_edit_team(team_id, name, region, remove_id):
         data = 1
         connection.commit()
     return data
+
+def sqk_add_game():
+    pass
 
 def sql_get_games(sort = None, reverse = None):
     if not sort or reverse is None:
@@ -326,6 +364,7 @@ def sql_get_game_info(game_id):
             FROM TeamPlayers tp JOIN Games g ON tp.team_id = g.team_1_id
             WHERE g.game_id = {game_id}
         )
+        ORDER BY ps.kills DESC;
     """)
     data.append(cursor.fetchall())
     cursor.execute(f"""
@@ -336,6 +375,7 @@ def sql_get_game_info(game_id):
             FROM TeamPlayers tp JOIN Games g ON tp.team_id = g.team_2_id
             WHERE g.game_id = {game_id}
         )
+        ORDER BY ps.kills DESC;
     """)
     data.append(cursor.fetchall())
     return data

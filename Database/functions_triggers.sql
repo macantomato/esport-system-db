@@ -33,14 +33,14 @@ BEGIN
 END %%
 delimiter ;
 
--- procedure to get all players ids from a game
-DROP PROCEDURE IF EXISTS prGetGamePlayers;
+-- procedure to get all players ids and names from a team
+DROP PROCEDURE IF EXISTS prGetTeamPlayers;
 delimiter %%
-CREATE PROCEDURE prGetGamePlayers (IN _game_id INTEGER)
+CREATE PROCEDURE prGetTeamPlayers (IN _team_id INTEGER)
 BEGIN
-    SELECT player_id
-    FROM Games JOIN TeamPlayers ON team_id IN (team_1_id, team_2_id)
-    WHERE game_id = _game_id;
+    SELECT p.player_id, name
+    FROM Players p JOIN TeamPlayers tp ON p.player_id = tp.player_id
+    WHERE team_id = _team_id;
 END %%
 delimiter ;
 

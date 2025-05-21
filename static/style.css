@@ -18,6 +18,14 @@ label {
     margin-top: 4px;
 }
 
+.down {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-right: 6px;
+    justify-content: center;
+}
+
 button {
     text-decoration: none;
     margin-top: 6px;
@@ -115,4 +123,31 @@ nav a {
 }
 .stats table tr, th {
     padding: 4px;
+}
+
+#player_stats h4 {
+    text-align: left;
+    margin: 6px 24px 0px 24px;
+    border-bottom: 1px dotted black;
+}
+
+.player_stats_inputs {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 6px 24px 6px 24px;
+}
+.player_stats_inputs .down {
+    flex-grow: 1;
+    text-align: left;
+    margin-right: 0;
+}
+.player_stats_inputs input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.team_title {
+    margin-left: 24px;
+    text-align: left;
 }
