@@ -23,9 +23,12 @@ button {
     margin-top: 6px;
     margin-right: 12px;
     border-radius: 4px;
+    width: fit-content;
+    align-self: center;
     background-color: lightblue;
     border: 1px solid black;
     cursor: pointer;
+    padding: 6px;
 }
 
 nav {
@@ -64,7 +67,7 @@ nav a {
     background-color: lightgray;
     padding-bottom: 16px;
 }
-.input input, select, button {
+.input input, select {
     padding: 4px;
     align-self: center;
     width: fit-content;
@@ -101,6 +104,15 @@ nav a {
     min-width: min-content;
     text-align: left;
     padding: 24px;
+    padding-top: 6px;
     background-color: lightgray;
     overflow-y: scroll;
+}
+.stats table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+}
+.stats table tr, th {
+    padding: 4px;
 }

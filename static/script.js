@@ -402,10 +402,11 @@ function getGames(sort = null) {
         result.forEach(item => {
             var winner_is_team_1 = item["winner_team_id"] == item["team_1_id"]
             var date = new Date(item["game_date"])
+            var date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`
             innerHTML += `
                 <tr onclick="getGameInfo(${item["game_id"]})" style="cursor: pointer">
                     <th>${item["game_id"]}</th>
-                    <th>${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}</th>
+                    <th>${date_str}</th>
                     <th>${winner_is_team_1 ? "<b>" : ""}${item["team_1_name"]}${winner_is_team_1 ? "</b>" : ""}</th>
                     <th>
                         ${winner_is_team_1 ? "<b>" : ""}${item["team_1_score"]}${winner_is_team_1 ? "</b>" : ""} -
@@ -423,71 +424,87 @@ function getGames(sort = null) {
     }, sort);
 }
 
+function getGameInfo(game_id) {
+    postRequest("/post/get_game_info", result => {
+        console.log("Game stats: ")
+        console.log(result)
+
+        var team_1_id = result["team_1_id"]
+        var team_1_name = result["team_1_name"]
+        var team_1_score = result["team_1_score"]
+        var team_2_id = result["team_2_id"]
+        var team_2_name = result["team_2_name"]
+        var team_2_score = result["team_2_score"]
+        var winner_team_id = result["winner_team_id"]
+
+        var date = new Date(result["date"])
+        var date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`
+
+        var innerHTML = `
+            <h3>Game Info</h3>
+            <p><b>Date:</b> ${date_str}</p>
+            <p><b>${team_1_name}</b> vs <b>${team_2_name}</b></p>
+            <p><b>Score:</b> ${team_1_score}–${team_2_score}</p>
+            <p><b>Winner:</b> ${winner_team_id == team_1_id ? team_1_name : team_2_name}</p>
+
+            <h3>Player Stats</h3>
+            <h4>Team 1</h4>
+        `;
+        innerHTML += getTeamStatsHTML(result["team_1_stats"]);
+        innerHTML += "<h4>Team 2</h4>"
+        innerHTML += getTeamStatsHTML(result["team_2_stats"]);
+        innerHTML += `<button onclick="closeStats()">Close</button>`;
+
+        document.getElementById("game_stats").innerHTML = innerHTML;
+    }, {game_id});
+}
+
+function getTeamStatsHTML(team_stats) {
+    var HTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th><b>ID</b></th>
+                    <th><b>Name</b></th>
+                    <th><b>Kills</b></th>
+                    <th><b>Deaths</b></th>
+                    <th><b>K/D</b></th>
+                    <th><b>Damage</b></th>
+                    <th><b>Healing</b></th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    team_stats.forEach(player => {
+        var player_id = player[0]
+        var name = player[1]
+        var kills = player[2]
+        var deaths = player[3]
+        var kd = parseFloat(kills / deaths).toFixed(2)
+        var damage = player[4]
+        var healing = player[5]
+        HTML += `
+            <tr>
+                <th>${player_id}</th>
+                <th>${name}</th>
+                <th>${kills}</th>
+                <th>${deaths}</th>
+                <th>${kd}</th>
+                <th>${damage}</th>
+                <th>${healing}</th>
+            </tr>
+        `;
+    });
+    HTML += `
+            </tbody>
+        </table>
+    `;
+    return HTML;
+}
+
 function handleGamesSort(key) {
     getGames({"sort": key, "reverse": gamesSortDict[key]});
     gamesSortDict[key] = !gamesSortDict[key];
-}
-
-function getGameInfo(game_id) {
-    postRequest("/post/get_game_info", result => {
-        const dateStr = new Date(result.game_date).toLocaleDateString();
-
-        const t1Players = result.players.filter(p => p.team_id === result.team_1_id);
-        const t2Players = result.players.filter(p => p.team_id === result.team_2_id);
-
-        let html = `
-            <h3>Game Info</h3>
-            <p><b>Date:</b> ${dateStr}</p>
-            <p><b>${result.team_1_name}</b> vs <b>${result.team_2_name}</b></p>
-            <p><b>Score:</b> ${result.team_1_score}–${result.team_2_score}</p>
-            <p><b>Winner:</b> ${
-                result.winner_team_id === result.team_1_id
-                  ? result.team_1_name
-                  : result.team_2_name
-            }</p>
-
-            <h3>Player Kills by Team</h3>
-            <div style="display: flex; gap: 40px;">
-        `;
-
-        function renderTeamTable(teamName, players) {
-            if (!players.length) {
-                return `<div><h4>${teamName}</h4><p>No data</p></div>`;
-            }
-            let tbl = `
-              <div>
-                <h4>${teamName}</h4>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Player ID</th><th>Name</th><th>Kills</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-            `;
-            players.forEach(p => {
-                tbl += `
-                    <tr>
-                      <td>${p.player_id}</td>
-                      <td>${p.name}</td>
-                      <td>${p.kills}</td>
-                    </tr>
-                `;
-            });
-            tbl += `
-                  </tbody>
-                </table>
-              </div>
-            `;
-            return tbl;
-        }
-
-        html += renderTeamTable(result.team_1_name, t1Players);
-        html += renderTeamTable(result.team_2_name, t2Players);
-        html += `</div><button onclick="closeStats()">Close</button>`;
-
-        document.getElementById("game_stats").innerHTML = html;
-    }, { game_id });
 }
 
 //General

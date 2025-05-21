@@ -185,11 +185,26 @@ def get_games():
     #print(f"Get Games: {str(games)}")
     return jsonify(games)
 
-@app.route("/post/get_game_info", methods=["POST"])
+@app.post("/post/get_game_info")
 def get_game_info():
     param = request.get_json()
-    info = sql_get_game_info(param["game_id"])
-    return jsonify(info)
+    game_id = param["game_id"]
+    data = sql_get_game_info(game_id)
+    stats_keys = [
+        "game_id",
+        "date",
+        "team_1_id",
+        "team_2_id",
+        "team_1_score",
+        "team_2_score",
+        "winner_team_id",
+        "team_1_name",
+        "team_2_name",
+        "team_1_stats",
+        "team_2_stats"
+    ]
+    game_info = dict(zip(stats_keys, data))
+    return jsonify(game_info)
 
 #sql functions ---------------------------------------------------------------------
 def sql_setup():
@@ -300,51 +315,30 @@ def sql_get_games(sort = None, reverse = None):
     return data
 
 def sql_get_game_info(game_id):
+    data = []
+    cursor.execute(f"SELECT * FROM GamesExtended WHERE game_id = {game_id}")
+    data.extend(cursor.fetchone())
     cursor.execute(f"""
-        SELECT game_date, team_1_id, team_2_id,
-        team_1_score, team_2_score, winner_team_id
-        FROM Games WHERE game_id = {game_id}
+        SELECT p.player_id, p.name, ps.kills, ps.deaths, ps.damage, ps.healing
+        FROM Players p JOIN PlayerStats ps ON p.player_id = ps.player_id
+        WHERE ps.game_id = {game_id} AND p.player_id IN (
+            SELECT player_id
+            FROM TeamPlayers tp JOIN Games g ON tp.team_id = g.team_1_id
+            WHERE g.game_id = {game_id}
+        )
     """)
-    game_date, t1, t2, s1, s2, winner = cursor.fetchone()
-
-    cursor.execute("SELECT getTeamName(%s), getTeamName(%s)", (t1, t2))
-    t1_name, t2_name = cursor.fetchone()
+    data.append(cursor.fetchall())
     cursor.execute(f"""
-        SELECT PlayerStats.player_id,
-        Players.name,
-        getPlayerTeam(PlayerStats.player_id) AS team_id,
-        PlayerStats.kills,
-        PlayerStats.deaths,
-        PlayerStats.damage,
-        PlayerStats.healing
-        FROM PlayerStats
-        JOIN Players ON PlayerStats.player_id = Players.player_id
-        WHERE PlayerStats.game_id = {game_id}
+        SELECT p.player_id, p.name, ps.kills, ps.deaths, ps.damage, ps.healing
+        FROM Players p JOIN PlayerStats ps ON p.player_id = ps.player_id
+        WHERE ps.game_id = {game_id} AND p.player_id IN (
+            SELECT player_id
+            FROM TeamPlayers tp JOIN Games g ON tp.team_id = g.team_2_id
+            WHERE g.game_id = {game_id}
+        )
     """)
-    data = cursor.fetchall()
-    #print(f"data print: {data}")
-    return {
-        "game_date":      game_date.isoformat(),
-        "team_1_id":      t1,
-        "team_1_name":    t1_name,
-        "team_1_score":   s1,
-        "team_2_id":      t2,
-        "team_2_name":    t2_name,
-        "team_2_score":   s2,
-        "winner_team_id": winner,
-        "players": [
-            {
-              "player_id": pid,
-              "name":      nm,
-              "team_id":   tid,
-              "kills":     k,
-              "deaths":    d,
-              "damage":    dmg,
-              "healing":   hl
-            }
-            for pid, nm, tid, k, d, dmg, hl in data
-        ]
-    }
+    data.append(cursor.fetchall())
+    return data
 
 #main ---------------------------------------------------------------------
 if __name__ == "__main__":
