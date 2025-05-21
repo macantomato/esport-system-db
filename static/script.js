@@ -30,7 +30,7 @@ function postRequest(url, callback, data = null) {
 // Players page ------------------------------------------------------------
 function addPlayer() {
     var name = document.getElementById("player_name").value.trim()
-    var age = document.getElementById("player_age").value
+    var age = parseInt(document.getElementById("player_age").value)
     var country = document.getElementById("player_country").value
     if (!name || !age || age <= 0 || !country) {
         alert("All fields needs to be filled with valid data!");
@@ -164,7 +164,7 @@ function openPlayerEdit(player_id, name, age, country) {
 
 function editPlayer(player_id) {
     var name = document.getElementById("edit_player_name").value.trim()
-    var age = document.getElementById("edit_player_age").value
+    var age = parseInt(document.getElementById("edit_player_age").value)
     var country = document.getElementById("edit_player_country").value
     if (!name || !age || age <= 0 || !country) {
         alert("All fields needs to be filled with valid data!");
@@ -192,8 +192,8 @@ function handleplayersSort(key) {
 
 // Teams page ------------------------------------------------------------
 function addTeamPlayer() {
-    var team_id = document.getElementById("team_id").value
-    var player_id = document.getElementById("player_id").value
+    var team_id = parseInt(document.getElementById("team_id").value)
+    var player_id = parseInt(document.getElementById("player_id").value)
     if (!team_id || !player_id) {
         alert("All fields needs to be filled with valid data!");
         return;
@@ -291,9 +291,9 @@ function getTeamInfo(team_id) {
             <h3>Players</h3>
             <ul>
         `;
-        players.forEach(name => {
+        players.forEach(info => {
             innerHTML += `
-                <li><b>${name}</b></li>
+                <li>${info[0]}: <b>${info[1]}</b></li>
             `;
         });
         innerHTML += `
@@ -326,7 +326,7 @@ function openTeamEdit(team_id, name, region) {
         <h4>ID: ${team_id}</h4>
 
         <label for="edit_team_name">Team Name:</label>
-        <input type="text" id="edit_team_name" placeholder="Enter Team Name" value="${name}">
+        <input type="text" id="edit_team_name" placeholder="Enter team name" value="${name}">
 
         <label for="edit_team_region">Region:</label>
         <select id="edit_team_region">
@@ -337,6 +337,9 @@ function openTeamEdit(team_id, name, region) {
             <option value="NA" ${region == "NA" ? "selected": ""}>NA (North America)</option>
             <option value="JP" ${region == "JP" ? "selected": ""}>JP (Japan)</option>
         </select>
+
+        <label for="remove_team_player">Remove Player from Team:</label>
+        <input type="number" id="remove_team_player" placeholder="Enter player ID">
 
         <div>
             <button onclick="editTeam(${team_id})">Confirm Changes</button>
@@ -349,6 +352,7 @@ function openTeamEdit(team_id, name, region) {
 function editTeam(team_id) {
     var name = document.getElementById("edit_team_name").value.trim()
     var region = document.getElementById("edit_team_region").value
+    var player_remove = parseInt(document.getElementById("remove_team_player").value)
     if (!name || !region) {
         alert("All fields needs to be filled with valid data!");
         return;
@@ -358,10 +362,15 @@ function editTeam(team_id) {
         "team_id": team_id,
         "name": name,
         "region": region,
+        "remove": player_remove
     };
 
     postRequest("/post/edit_team", (result) => {
-        setStatus("Edited Team  (ID: " + result["team_id"] + ")");
+        if (!result["result"]) {
+            alert("Failed editing team!")
+            return
+        }
+        setStatus("Edited Team  (ID: " + team_id + ")");
         closeEdit();
         getTeams();
     }, data);

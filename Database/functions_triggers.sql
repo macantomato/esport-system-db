@@ -3,20 +3,32 @@ DROP PROCEDURE IF EXISTS prAddTeamPlayer;
 delimiter %%
 CREATE PROCEDURE prAddTeamPlayer (IN _team_id INTEGER, IN _player_id INTEGER)
 BEGIN
-    IF (SELECT count(*) FROM Players CROSS JOIN Teams WHERE player_id = _player_id AND team_id = _team_id) = 0 THEN
+    IF NOT EXISTS (SELECT * FROM Teams WHERE team_id = _team_id) OR NOT EXISTS (SELECT * FROM Players WHERE player_id = _player_id) THEN
         SELECT 0; -- false
     ELSE
-        START TRANSACTION;
         INSERT INTO TeamPlayers (team_id, player_id)
         VALUES (_team_id, _player_id);
         -- check so a player isnt on multiple teams
         IF (SELECT count(*) FROM TeamPlayers WHERE player_id = _player_id) > 1 THEN
-            ROLLBACK;
             SELECT 0; -- false
         ELSE
-            COMMIT;
             SELECT 1; -- true
         END IF;
+    END IF;
+END %%
+delimiter ;
+
+-- procedure to remove player from team, can only be done if player has no games played
+DROP PROCEDURE IF EXISTS prDeleteTeamPlayer;
+delimiter %%
+CREATE PROCEDURE prDeleteTeamPlayer (IN _team_id INTEGER, IN _player_id INTEGER)
+BEGIN
+    -- check if player is on given team and has no games
+    IF NOT getPlayerTeam(_player_id) <=> _team_id OR (SELECT count(*) FROM PlayerStats WHERE player_id = _player_id) > 0 THEN
+        SELECT 0; -- false
+    ELSE
+        DELETE FROM TeamPlayers WHERE team_id = _team_id AND player_id = _player_id;
+        SELECT 1; -- true
     END IF;
 END %%
 delimiter ;
@@ -72,3 +84,7 @@ BEGIN
     END IF;
 END %%
 delimiter ;
+
+-- view for getting games data with team names
+DROP VIEW IF EXISTS GamesExtended;
+CREATE VIEW GamesExtended AS SELECT *, getTeamName(team_1_id) AS team_1_name, getTeamName(team_2_id) AS team_2_name FROM Games;

@@ -157,8 +157,9 @@ def edit_team():
     team_id = param["team_id"]
     name = param["name"]
     region = param["region"]
-    sql_edit_team(team_id, name, region)
-    return jsonify({"team_id": team_id})
+    remove_id = param["remove"]
+    data = sql_edit_team(team_id, name, region, remove_id)
+    return jsonify({"result": data})
 
 @app.post("/post/get_games")
 def get_games():
@@ -235,6 +236,10 @@ def sql_add_player_to_team(team_id, player_id):
     cursor.callproc("prAddTeamPlayer", (team_id, player_id))
     for result in cursor.stored_results():
         data = result.fetchone()[0]
+    if data:
+        connection.commit()
+    else:
+        connection.rollback()
     return data
 
 def sql_add_team(name, region):
@@ -255,8 +260,8 @@ def sql_get_team_info(team_id):
     cursor.execute(f"SELECT * FROM Teams WHERE team_id = {team_id}")
     data.extend(cursor.fetchone())
     try:
-        cursor.execute(f"SELECT name FROM Players p JOIN TeamPlayers tp ON p.player_id = tp.player_id WHERE team_id = {team_id}")
-        data.append([name for (name,) in cursor.fetchall()])
+        cursor.execute(f"SELECT p.player_id, p.name FROM Players p JOIN TeamPlayers tp ON p.player_id = tp.player_id WHERE team_id = {team_id}")
+        data.append(cursor.fetchall())
         cursor.execute(f"SELECT count(*) FROM Games WHERE {team_id} IN (team_1_id, team_2_id)")
         data.extend(cursor.fetchone())
         cursor.execute(f"SELECT count(*) FROM Games WHERE winner_team_id = {team_id}")
@@ -265,15 +270,26 @@ def sql_get_team_info(team_id):
         data.extend([None] * 3)
     return data
 
-def sql_edit_team(team_id, name, region):
+def sql_edit_team(team_id, name, region, remove_id):
     cursor.execute("UPDATE Teams SET name = %s, region = %s WHERE team_id = %s", (name, region, team_id))
-    connection.commit()
+    if remove_id is not None:
+        cursor.callproc("prDeleteTeamPlayer", (team_id, remove_id))
+        for result in cursor.stored_results():
+            data = result.fetchone()[0]
+        if data:
+            connection.commit()
+        else:
+            connection.rollback()
+    else:
+        data = 1
+        connection.commit()
+    return data
 
 def sql_get_games(sort = None, reverse = None):
     if not sort or reverse is None:
-        cursor.execute("SELECT *, getTeamName(team_1_id) AS team_1_name, getTeamName(team_2_id) AS team_2_name FROM Games;")
+        cursor.execute("SELECT * FROM GamesExtended;")
     else:
-        cursor.execute(f"SELECT *, getTeamName(team_1_id) AS team_1_name, getTeamName(team_2_id) AS team_2_name FROM Games ORDER BY {sort} {'ASC' if reverse else 'DESC'};")
+        cursor.execute(f"SELECT * FROM GamesExtended ORDER BY {sort} {'ASC' if reverse else 'DESC'};")
     data = cursor.fetchall()
     return data
 
