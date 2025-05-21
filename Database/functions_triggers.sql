@@ -24,7 +24,7 @@ delimiter %%
 CREATE PROCEDURE prDeleteTeamPlayer (IN _team_id INTEGER, IN _player_id INTEGER)
 BEGIN
     -- check if player is on given team and has no games
-    IF NOT getPlayerTeam(_player_id) <=> _team_id OR (SELECT count(*) FROM PlayerStats WHERE player_id = _player_id) > 0 THEN
+    IF getPlayerTeam(_player_id) IS NULL OR getPlayerTeam(_player_id) != _team_id OR (SELECT count(*) FROM PlayerStats WHERE player_id = _player_id) > 0 THEN
         SELECT 0; -- false
     ELSE
         DELETE FROM TeamPlayers WHERE team_id = _team_id AND player_id = _player_id;
