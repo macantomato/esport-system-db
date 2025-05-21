@@ -180,7 +180,6 @@ function editPlayer(player_id) {
     postRequest("/post/edit_player", (result) => {
         console.log("Edited player: " + result["player_id"]);
         closeEdit();
-        closeStats();
         getPlayers();
     }, data);
 }
@@ -203,7 +202,10 @@ function addTeamPlayer() {
         console.log(result)
         if (!result["result"]) {
             alert("Failed adding player to team!")
+            return
         }
+        document.getElementById("team_id").value = "";
+        document.getElementById("player_id").value = "";
     }, data)
 }
 
@@ -359,7 +361,6 @@ function editTeam(team_id) {
     postRequest("/post/edit_team", (result) => {
         console.log("Edited Team: " + result["team_id"]);
         closeEdit();
-        closeStats();
         getTeams();
     }, data);
 }

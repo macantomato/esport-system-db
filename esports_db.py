@@ -21,7 +21,9 @@ app = Flask(__name__)
 def execute_sql_file(filepath):
     with open(filepath, "r") as file:
         content = file.read()
-        cursor.execute(content)
+        cursor.execute(content, map_results=True)
+        while cursor.nextset():
+            _ = cursor.fetchall()
         connection.commit()
         file.close()
 
