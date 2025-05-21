@@ -185,6 +185,12 @@ def get_games():
     #print(f"Get Games: {str(games)}")
     return jsonify(games)
 
+@app.route("/post/get_game_info", methods=["POST"])
+def get_game_info():
+    param = request.get_json()
+    info = sql_get_game_info(param["game_id"])
+    return jsonify(info)
+
 #sql functions ---------------------------------------------------------------------
 def sql_setup():
     #create and/or use db
@@ -292,6 +298,53 @@ def sql_get_games(sort = None, reverse = None):
         cursor.execute(f"SELECT * FROM GamesExtended ORDER BY {sort} {'ASC' if reverse else 'DESC'};")
     data = cursor.fetchall()
     return data
+
+def sql_get_game_info(game_id):
+    cursor.execute(f"""
+        SELECT game_date, team_1_id, team_2_id,
+        team_1_score, team_2_score, winner_team_id
+        FROM Games WHERE game_id = {game_id}
+    """)
+    game_date, t1, t2, s1, s2, winner = cursor.fetchone()
+
+    cursor.execute("SELECT getTeamName(%s), getTeamName(%s)", (t1, t2))
+    t1_name, t2_name = cursor.fetchone()
+    cursor.execute(f"""
+        SELECT PlayerStats.player_id,
+        Players.name,
+        getPlayerTeam(PlayerStats.player_id) AS team_id,
+        PlayerStats.kills,
+        PlayerStats.deaths,
+        PlayerStats.damage,
+        PlayerStats.healing
+        FROM PlayerStats
+        JOIN Players ON PlayerStats.player_id = Players.player_id
+        WHERE PlayerStats.game_id = {game_id}
+    """)
+    data = cursor.fetchall()
+    #print(f"data print: {data}")
+    return {
+        "game_date":      game_date.isoformat(),
+        "team_1_id":      t1,
+        "team_1_name":    t1_name,
+        "team_1_score":   s1,
+        "team_2_id":      t2,
+        "team_2_name":    t2_name,
+        "team_2_score":   s2,
+        "winner_team_id": winner,
+        "players": [
+            {
+              "player_id": pid,
+              "name":      nm,
+              "team_id":   tid,
+              "kills":     k,
+              "deaths":    d,
+              "damage":    dmg,
+              "healing":   hl
+            }
+            for pid, nm, tid, k, d, dmg, hl in data
+        ]
+    }
 
 #main ---------------------------------------------------------------------
 if __name__ == "__main__":

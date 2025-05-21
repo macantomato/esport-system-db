@@ -428,6 +428,68 @@ function handleGamesSort(key) {
     gamesSortDict[key] = !gamesSortDict[key];
 }
 
+function getGameInfo(game_id) {
+    postRequest("/post/get_game_info", result => {
+        const dateStr = new Date(result.game_date).toLocaleDateString();
+
+        const t1Players = result.players.filter(p => p.team_id === result.team_1_id);
+        const t2Players = result.players.filter(p => p.team_id === result.team_2_id);
+
+        let html = `
+            <h3>Game Info</h3>
+            <p><b>Date:</b> ${dateStr}</p>
+            <p><b>${result.team_1_name}</b> vs <b>${result.team_2_name}</b></p>
+            <p><b>Score:</b> ${result.team_1_score}–${result.team_2_score}</p>
+            <p><b>Winner:</b> ${
+                result.winner_team_id === result.team_1_id
+                  ? result.team_1_name
+                  : result.team_2_name
+            }</p>
+
+            <h3>Player Kills by Team</h3>
+            <div style="display: flex; gap: 40px;">
+        `;
+
+        function renderTeamTable(teamName, players) {
+            if (!players.length) {
+                return `<div><h4>${teamName}</h4><p>No data</p></div>`;
+            }
+            let tbl = `
+              <div>
+                <h4>${teamName}</h4>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Player ID</th><th>Name</th><th>Kills</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+            `;
+            players.forEach(p => {
+                tbl += `
+                    <tr>
+                      <td>${p.player_id}</td>
+                      <td>${p.name}</td>
+                      <td>${p.kills}</td>
+                    </tr>
+                `;
+            });
+            tbl += `
+                  </tbody>
+                </table>
+              </div>
+            `;
+            return tbl;
+        }
+
+        html += renderTeamTable(result.team_1_name, t1Players);
+        html += renderTeamTable(result.team_2_name, t2Players);
+        html += `</div><button onclick="closeStats()">Close</button>`;
+
+        document.getElementById("game_stats").innerHTML = html;
+    }, { game_id });
+}
+
 //General
 function closeStats() {
     document.getElementsByClassName("stats")[0].innerHTML = "";
