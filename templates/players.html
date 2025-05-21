@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Players - Esports DB</title>
+    <title>Esports DB - Players</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body onload="getPlayers()">
-    <h1>Players Page</h1>
+    <h1>Esports DB - Players</h1>
     <nav>
-      <a href="{{ url_for('intro') }}">Home Page</a>
-      <a href="{{ url_for('players_page') }}">Players Page</a>
-      <a href="{{ url_for('teams_page') }}">Teams Page</a>
-      <a href="{{ url_for('games_page') }}">Games Page</a>
+      <a href="{{ url_for('intro') }}">Home</a>
+      <a href="{{ url_for('players_page') }}">Players</a>
+      <a href="{{ url_for('teams_page') }}">Teams</a>
+      <a href="{{ url_for('games_page') }}">Games</a>
     </nav>
     <div class="container">
         <div class="input" id="player_input">
@@ -261,6 +261,9 @@
             </select>
 
             <button onclick="addPlayer()">Add Player</button>
+        </div>
+        <div class="input area2" id="player_edit">
+            <!-- empty to begin with -->
         </div>
         <div class="list" id="player_list">
             <!-- empty to begin with -->

@@ -46,10 +46,10 @@ def teams_page():
 #flask sql requests ---------------------------------------------------------------------
 @app.post("/post/add_player")
 def add_player():
-    data = request.get_json()
-    name = data["name"]
-    age = data["age"]
-    country = data["country"]
+    param = request.get_json()
+    name = param["name"]
+    age = param["age"]
+    country = param["country"]
     new_id = sql_add_player(name, age, country)
     print(f"Added player: {new_id}, {name}, {age}, {country}")
     return jsonify({"player_id": new_id})
@@ -88,6 +88,16 @@ def get_player_info():
     player_info = dict(zip(stats_keys, data))
     return jsonify(player_info)
 
+@app.post("/post/edit_player")
+def edit_player():
+    param = request.get_json()
+    player_id = param["player_id"]
+    name = param["name"]
+    age = param["age"]
+    country = param["country"]
+    sql_edit_player(player_id, name, age, country)
+    return jsonify({"player_id": player_id})
+
 @app.post("/post/add_player_to_team")
 def add_player_to_team():
     data = request.get_json()
@@ -102,9 +112,9 @@ def add_player_to_team():
 
 @app.post("/post/add_team")
 def add_team():
-    data = request.get_json()
-    name = data["name"]
-    region = data["region"]
+    param = request.get_json()
+    name = param["name"]
+    region = param["region"]
     new_id = sql_add_team(name, region)
     print(f"Added team: {new_id}, {name}, {region}")
     return jsonify({"team_id": new_id})
@@ -138,6 +148,15 @@ def get_team_info():
     ]
     team_info = dict(zip(stats_keys, data))
     return jsonify(team_info)
+
+@app.post("/post/edit_team")
+def edit_team():
+    param = request.get_json()
+    team_id = param["team_id"]
+    name = param["name"]
+    region = param["region"]
+    sql_edit_team(team_id, name, region)
+    return jsonify({"team_id": team_id})
 
 #sql functions ---------------------------------------------------------------------
 def sql_setup():
@@ -182,6 +201,10 @@ def sql_get_player_info(player_id):
         data.extend([None] * 6)
     return data
 
+def sql_edit_player(player_id, name, age, country):
+    cursor.execute("UPDATE Players SET name = %s, age = %s, country = %s WHERE player_id = %s", (name, age, country, player_id))
+    connection.commit()
+
 def sql_add_player_to_team(team_id, player_id):
     cursor.callproc("prAddTeamPlayer", (team_id, player_id))
     for result in cursor.stored_results():
@@ -215,6 +238,10 @@ def sql_get_team_info(team_id):
     except:
         data.extend([None] * 3)
     return data
+
+def sql_edit_team(team_id, name, region):
+    cursor.execute("UPDATE Teams SET name = %s, region = %s WHERE team_id = %s", (name, region, team_id))
+    connection.commit()
 
 # def sql_get_games(sort = None, reverse = None):
 #     if not sort or reverse is None:
