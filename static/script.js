@@ -1,15 +1,15 @@
-playersSortDict = {
+var playersSortDict = {
     "player_id": false,
     "name": false,
     "age": false,
     "country": false
 }
-teamsSortDict = {
+var teamsSortDict = {
     "team_id": false,
     "name": false,
     "region": false
 }
-gamesSortDict = {
+var gamesSortDict = {
     "game_id": false,
     "game_date": false,
     "abs(team_1_score - team_2_score)": false,
@@ -17,9 +17,7 @@ gamesSortDict = {
     "team_2_name": false
 }
 
-teams = [
-
-]
+var teams = []
 
 function postRequest(url, callback, data = null) {
     fetch(url, {
@@ -33,15 +31,16 @@ function postRequest(url, callback, data = null) {
 
 // Players page ------------------------------------------------------------
 function addPlayer() {
-    var name = document.getElementById("player_name").value.trim()
-    var age = parseInt(document.getElementById("player_age").value)
-    var country = document.getElementById("player_country").value
+    let name = document.getElementById("player_name").value.trim();
+    let age = parseInt(document.getElementById("player_age").value);
+    let country = document.getElementById("player_country").value;
+
     if (!name || !age || age <= 0 || !country) {
         alert("All fields needs to be filled with valid data!");
         return;
     }
 
-    var data = {
+    let data = {
         "name": name,
         "age": age,
         "country": country
@@ -49,9 +48,7 @@ function addPlayer() {
 
     postRequest("/post/add_player", (result) => {
         setStatus("Added Player (ID: " + result["player_id"] + ")");
-        document.getElementById("player_name").value = "";
-        document.getElementById("player_age").value = "";
-        document.getElementById("player_country").selectedIndex = 0
+        clearPlayerInput();
         getPlayers();
     }, data);
 }
@@ -60,7 +57,7 @@ function getPlayers(sort = null) {
     postRequest("/post/get_players", (result) => {
         console.log("Get players:");
         console.log(result)
-        var innerHTML = `
+        let innerHTML = `
             <table>
                 <thead>
                     <tr>
@@ -95,19 +92,19 @@ function getPlayerInfo(player_id) {
         console.log("Player stats: ")
         console.log(result)
 
-        var player_name = result["player_name"];
-        var age = result["age"];
-        var country = result["country"];
-        var team_name = result["team_name"] ? result["team_name"] : "No Team"
+        let player_name = result["player_name"];
+        let age = result["age"];
+        let country = result["country"];
+        let team_name = result["team_name"] ? result["team_name"] : "No Team"
 
-        var num_games = result["num_games"];
-        var total_kills = result["total_kills"] ? result["total_kills"] : 0;
-        var total_deaths = result["total_deaths"] ? result["total_deaths"]: 0;
-        var kd = total_deaths ? parseFloat(result["total_kills"] / result["total_deaths"]).toFixed(2) : total_kills;
-        var avg_damage = result["avg_damage"] ? result["avg_damage"] : 0;
-        var avg_healing = result["avg_healing"] ? result["avg_healing"] : 0;
+        let num_games = result["num_games"];
+        let total_kills = result["total_kills"] ? result["total_kills"] : 0;
+        let total_deaths = result["total_deaths"] ? result["total_deaths"]: 0;
+        let kd = total_deaths ? parseFloat(result["total_kills"] / result["total_deaths"]).toFixed(2) : total_kills;
+        let avg_damage = result["avg_damage"] ? result["avg_damage"] : 0;
+        let avg_healing = result["avg_healing"] ? result["avg_healing"] : 0;
 
-        var innerHTML = `
+        let innerHTML = `
             <h3>Player Info</h3>
             <p><b>Name: </b>${player_name}</p>
             <p><b>Age: </b>${age}</p>
@@ -140,10 +137,10 @@ function getPlayerInfo(player_id) {
 }
 
 function openPlayerEdit(player_id, name, age, country) {
-    var listHTML = document.getElementById("player_country").innerHTML
-    var index = listHTML.indexOf(`>${country}<`)
-    var listHTMLselected = listHTML.substring(0, index) + "selected" + listHTML.substring(index)
-    var innerHTML = `
+    let listHTML = document.getElementById("player_country").innerHTML
+    let index = listHTML.indexOf(`>${country}<`)
+    let listHTMLselected = listHTML.substring(0, index) + "selected" + listHTML.substring(index)
+    let innerHTML = `
         <h3>Edit Player</h3>
         <h4>ID: ${player_id}</h4>
 
@@ -167,15 +164,16 @@ function openPlayerEdit(player_id, name, age, country) {
 }
 
 function editPlayer(player_id) {
-    var name = document.getElementById("edit_player_name").value.trim()
-    var age = parseInt(document.getElementById("edit_player_age").value)
-    var country = document.getElementById("edit_player_country").value
+    let name = document.getElementById("edit_player_name").value.trim();
+    let age = parseInt(document.getElementById("edit_player_age").value);
+    let country = document.getElementById("edit_player_country").value;
+
     if (!name || !age || age <= 0 || !country) {
         alert("All fields needs to be filled with valid data!");
         return;
     }
 
-    var data = {
+    let data = {
         "player_id": player_id,
         "name": name,
         "age": age,
@@ -194,16 +192,23 @@ function handleplayersSort(key) {
     playersSortDict[key] = !playersSortDict[key];
 }
 
+function clearPlayerInput() {
+    document.getElementById("player_name").value = "";
+    document.getElementById("player_age").value = "";
+    document.getElementById("player_country").selectedIndex = 0
+}
+
 // Teams page ------------------------------------------------------------
 function addTeamPlayer() {
-    var team_id = parseInt(document.getElementById("team_id").value)
-    var player_id = parseInt(document.getElementById("player_id").value)
+    let team_id = parseInt(document.getElementById("team_id").value);
+    let player_id = parseInt(document.getElementById("player_id").value);
+
     if (!team_id || !player_id) {
         alert("All fields needs to be filled with valid data!");
         return;
     }
 
-    var data = {
+    let data = {
         "team_id": team_id,
         "player_id": player_id
     }
@@ -215,28 +220,27 @@ function addTeamPlayer() {
             return
         }
         setStatus("Added Player to Team")
-        document.getElementById("team_id").value = "";
-        document.getElementById("player_id").value = "";
+        clearTeamPlayerInput()
     }, data)
 }
 
 function addTeam() {
-    var name = document.getElementById("team_name").value.trim()
-    var region = document.getElementById("team_region").value
+    let name = document.getElementById("team_name").value.trim();
+    let region = document.getElementById("team_region").value;
+
     if (!name || !region) {
         alert("All fields needs to be filled with valid data!");
         return;
     }
 
-    var data = {
+    let data = {
         "name": name,
         "region": region,
     };
 
     postRequest("/post/add_team", (result) => {
         setStatus("Added Team (ID: " + result["team_id"] + ")");
-        document.getElementById("team_name").value = "";
-        document.getElementById("team_region").selectedIndex = 0;
+        clearTeamInput();
         getTeams();
     }, data);
 }
@@ -245,7 +249,7 @@ function getTeams(sort = null) {
     postRequest("/post/get_teams", (result) => {
         console.log("Get teams:");
         console.log(result);
-        var innerHTML = `
+        let innerHTML = `
             <table>
                 <thead>
                     <tr>
@@ -258,9 +262,9 @@ function getTeams(sort = null) {
         `;
         teams = []
         result.forEach(item => {
-            var team_id = item["team_id"];
-            var name = item["name"];
-            var region = item["region"];
+            let team_id = item["team_id"];
+            let name = item["name"];
+            let region = item["region"];
             innerHTML += `
                 <tr onclick="getTeamInfo(${item["team_id"]})" style="cursor: pointer">
                     <th>${team_id}</th>
@@ -288,16 +292,16 @@ function getTeamInfo(team_id) {
         console.log("Team stats: ");
         console.log(result);
 
-        var team_name = result["team_name"];
-        var region = result["region"];
+        let team_name = result["team_name"];
+        let region = result["region"];
 
-        var players = result["players"].length ? result["players"] : ["No Players"];
+        let players = result["players"].length ? result["players"] : ["No Players"];
 
-        var num_games = result["num_games"] ? result["num_games"] : 0;
-        var num_wins = result["num_wins"] ? result["num_wins"] : 0;
-        var win_rate = result["num_games"] ? parseInt((num_wins / num_games) * 100) : 0;
+        let num_games = result["num_games"] ? result["num_games"] : 0;
+        let num_wins = result["num_wins"] ? result["num_wins"] : 0;
+        let win_rate = result["num_games"] ? parseInt((num_wins / num_games) * 100) : 0;
 
-        var innerHTML = `
+        let innerHTML = `
             <h3>Team Info</h3>
             <p><b>Name: </b>${team_name}</p>
             <p><b>Region: </b>${region}</p>
@@ -364,15 +368,16 @@ function openTeamEdit(team_id, name, region) {
 }
 
 function editTeam(team_id) {
-    var name = document.getElementById("edit_team_name").value.trim()
-    var region = document.getElementById("edit_team_region").value
-    var player_remove = parseInt(document.getElementById("remove_team_player").value)
+    let name = document.getElementById("edit_team_name").value.trim();
+    let region = document.getElementById("edit_team_region").value;
+    let player_remove = parseInt(document.getElementById("remove_team_player").value);
+
     if (!name || !region) {
         alert("All fields needs to be filled with valid data!");
         return;
     }
 
-    var data = {
+    let data = {
         "team_id": team_id,
         "name": name,
         "region": region,
@@ -395,14 +400,24 @@ function handleTeamsSort(key) {
     teamsSortDict[key] = !teamsSortDict[key];
 }
 
+function clearTeamInput() {
+    document.getElementById("team_name").value = "";
+    document.getElementById("team_region").selectedIndex = 0;
+}
+
+function clearTeamPlayerInput() {
+    document.getElementById("team_id").value = "";
+    document.getElementById("player_id").value = "";
+}
+
 //Games page ------------------------------------------------------------
 function addPlayerInputs() {
-    var team_1_id = parseInt(document.getElementById("team_1").value);
-    var team_2_id = parseInt(document.getElementById("team_2").value);
+    let team_1_id = parseInt(document.getElementById("team_1").value);
+    let team_2_id = parseInt(document.getElementById("team_2").value);
 
-    var innerHTML = "";
+    let innerHTML = "";
 
-    if (team_1_id || team_2_id) {
+    if (team_1_id && team_2_id) {
         innerHTML += "<h3>Set Player Stats</h3>"
     }
     else {
@@ -419,19 +434,19 @@ function addPlayerInputs() {
         console.log("Get both teams players: ");
         console.log(result);
 
-        var team_1_players = result["team_1"]
-        var team_2_players = result["team_2"]
+        let team_1_players = result["team_1"]
+        let team_2_players = result["team_2"]
 
         if (team_1_players) {
             innerHTML += "<h3 class='team_title'>Team 1</h3>";
             team_1_players.forEach(player => {
-                innerHTML += getStatsInputHTML(player)
+                innerHTML += getStatsInputHTML(player, "team_1")
             });
         }
         if (team_2_players) {
             innerHTML += "<h3 class='team_title'>Team 2</h3>";
             team_2_players.forEach(player => {
-                innerHTML += getStatsInputHTML(player)
+                innerHTML += getStatsInputHTML(player, "team_2")
             });
         }
 
@@ -440,14 +455,60 @@ function addPlayerInputs() {
 }
 
 function addGame() {
+    let date = new Date(document.getElementById("game_date").value);
+    let date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`;
+    let team_1_id = document.getElementById("team_1").value;
+    let team_2_id = document.getElementById("team_2").value;
+    let team_1_score = parseInt(document.getElementById("team_1_score").value);
+    let team_2_score = parseInt(document.getElementById("team_2_score").value);
 
+    let team_1_stats = [];
+    let team_2_stats = [];
+    let stats_elements = document.getElementsByClassName("player_stats_inputs");
+    for (let i = 0; i < stats_elements.length; i++) {
+        let player = stats_elements[i]
+        let stats = {};
+
+        kills = parseInt(player.getElementsByClassName("kills")[0].value);
+        deaths = parseInt(player.getElementsByClassName("deaths")[0].value);
+        damage = parseInt(player.getElementsByClassName("damage")[0].value);
+        healing = parseInt(player.getElementsByClassName("healing")[0].value);
+        player_id = parseInt(player.getElementsByClassName("player_id")[0].value);
+
+        stats["kills"] = kills;
+        stats["deaths"] = deaths;
+        stats["damage"] = damage;
+        stats["healing"] = healing;
+        stats["player_id"] = player_id;
+
+        if (isNaN(kills) && isNaN(deaths) && isNaN(damage) && isNaN(healing)) {
+            continue;
+        }
+
+        if (player.classList.contains("team_1_player")) {
+            team_1_stats.push(stats);
+        }
+        else {
+            team_2_stats.push(stats);
+        }
+    }
+
+    if (team_1_stats.some(e => (isNaN(e["kills"]) || isNaN(e["deaths"]) || isNaN(e["damage"]) || isNaN(e["healing"])))
+        || team_1_stats.length != team_2_stats.length || team_1_stats.length < 1 || team_2_stats.length < 1
+        || !date || !team_1_id || !team_2_id || !team_1_score || !team_2_score
+        || team_1_id == team_2_id || team_1_id <= 0 || team_2_id <= 0 || team_1_score < 0 || team_2_score < 0) {
+            alert("All fields needs to be filled with valid data!");
+            return;
+    }
+
+    //insert!!!
 }
 
 function getGames(sort = null) {
     postRequest("/post/get_games", (result) => {
         console.log("Get games:");
         console.log(result)
-        var innerHTML = `
+        let innerHTML = `
             <table>
                 <thead>
                     <tr>
@@ -461,9 +522,9 @@ function getGames(sort = null) {
                 <tbody>
         `;
         result.forEach(item => {
-            var winner_is_team_1 = item["winner_team_id"] == item["team_1_id"]
-            var date = new Date(item["game_date"])
-            var date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`
+            let winner_is_team_1 = item["winner_team_id"] == item["team_1_id"]
+            let date = new Date(item["game_date"])
+            let date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`
             innerHTML += `
                 <tr onclick="getGameInfo(${item["game_id"]})" style="cursor: pointer">
                     <th>${item["game_id"]}</th>
@@ -483,7 +544,7 @@ function getGames(sort = null) {
         `;
         document.getElementById("game_list").innerHTML = innerHTML;
         postRequest("/post/get_teams", (result) => {
-            var innerHTML = "<option value=''>Select team...</option>"
+            let innerHTML = "<option value=''>Select team...</option>"
             result.forEach(team => {
                 innerHTML += `<option value="${team["team_id"]}">${team["name"]}</option>`;
             });
@@ -495,21 +556,21 @@ function getGames(sort = null) {
 
 function getGameInfo(game_id) {
     postRequest("/post/get_game_info", (result) => {
-        console.log("Game stats: ")
-        console.log(result)
+        console.log("Game stats: ");
+        console.log(result);
 
-        var team_1_id = result["team_1_id"]
-        var team_1_name = result["team_1_name"]
-        var team_1_score = result["team_1_score"]
-        var team_2_id = result["team_2_id"]
-        var team_2_name = result["team_2_name"]
-        var team_2_score = result["team_2_score"]
-        var winner_team_id = result["winner_team_id"]
+        let team_1_id = result["team_1_id"];
+        let team_1_name = result["team_1_name"];
+        let team_1_score = result["team_1_score"];
+        let team_2_id = result["team_2_id"];
+        let team_2_name = result["team_2_name"];
+        let team_2_score = result["team_2_score"];
+        let winner_team_id = result["winner_team_id"];
 
-        var date = new Date(result["date"])
-        var date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`
+        let date = new Date(result["date"]);
+        let date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`;
 
-        var innerHTML = `
+        let innerHTML = `
             <h3>Game Info</h3>
             <p><b>Date:</b> ${date_str}</p>
             <p><b>${team_1_name}</b> vs <b>${team_2_name}</b></p>
@@ -517,10 +578,10 @@ function getGameInfo(game_id) {
             <p><b>Winner:</b> ${winner_team_id == team_1_id ? team_1_name : team_2_name}</p>
 
             <h3>Player Stats</h3>
-            <h4>Team 1</h4>
+            <h4>Team 1 - ${team_1_name}</h4>
         `;
         innerHTML += getTeamStatsHTML(result["team_1_stats"]);
-        innerHTML += "<h4>Team 2</h4>"
+        innerHTML += `<h4>Team 2 - ${team_2_name}</h4>`;
         innerHTML += getTeamStatsHTML(result["team_2_stats"]);
         innerHTML += `<button onclick="closeStats()">Close</button>`;
 
@@ -528,12 +589,12 @@ function getGameInfo(game_id) {
     }, {game_id});
 }
 
-function getStatsInputHTML(player) {
-    var player_id = player[0];
-    var name = player[1];
+function getStatsInputHTML(player, team) {
+    let player_id = player[0];
+    let name = player[1];
     innerHTML = `
         <h4>${name}</h4>
-        <div class="player_stats_inputs">
+        <div class="player_stats_inputs ${team}_player">
             <div class="down">
                 <label>Kills:</label>
                 <input type="number" class="kills" placeholder="Enter kills">
@@ -561,7 +622,7 @@ function getStatsInputHTML(player) {
 }
 
 function getTeamStatsHTML(team_stats) {
-    var HTML = `
+    let HTML = `
         <table>
             <thead>
                 <tr>
@@ -577,13 +638,13 @@ function getTeamStatsHTML(team_stats) {
             <tbody>
     `;
     team_stats.forEach(player => {
-        var player_id = player[0]
-        var name = player[1]
-        var kills = player[2]
-        var deaths = player[3]
-        var kd = parseFloat(kills / deaths).toFixed(2)
-        var damage = player[4]
-        var healing = player[5]
+        let player_id = player[0]
+        let name = player[1]
+        let kills = player[2]
+        let deaths = player[3]
+        let kd = parseFloat(kills / deaths).toFixed(2)
+        let damage = player[4]
+        let healing = player[5]
         HTML += `
             <tr>
                 <th>${player_id}</th>
@@ -606,6 +667,14 @@ function getTeamStatsHTML(team_stats) {
 function handleGamesSort(key) {
     getGames({"sort": key, "reverse": gamesSortDict[key]});
     gamesSortDict[key] = !gamesSortDict[key];
+}
+
+function clearGameInput() {
+    document.getElementById("game_date").value = ""
+    document.getElementById("team_1").selectedIndex = 0
+    document.getElementById("team_2").selectedIndex = 0
+    document.getElementById("team_1_score").value = ""
+    document.getElementById("team_2_score").value = ""
 }
 
 //General

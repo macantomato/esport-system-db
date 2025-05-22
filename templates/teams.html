@@ -32,7 +32,10 @@
                 <option value="JP">JP (Japan)</option>
             </select>
 
-            <button onclick="addTeam()">Add Team</button>
+            <div>
+                <button onclick="addTeam()">Add Team</button>
+                <button onclick="clearTeamInput()">Clear</button>
+            </div>
 
             <h3>Assign Player to Team</h3>
 
@@ -42,7 +45,10 @@
             <label for="player_id">Player ID:</label>
             <input type="number" id="player_id" placeholder="Enter player ID">
 
-            <button onclick="addTeamPlayer()">Assign</button>
+            <div>
+                <button onclick="addTeamPlayer()">Assign</button>
+                <button onclick="clearTeamPlayerInput()">Clear</button>
+            </div>
         </div>
         <div class="input area2" id="team_edit">
             <!-- empty to begin with -->

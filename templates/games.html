@@ -19,13 +19,16 @@
         <div class="input" id="game_input">
             <h3>Add Game</h3>
 
+            <label for="game_date">Date:</label>
+            <input type="date" id="game_date">
+
             <label for="team_1">Team 1:</label>
-            <select id="team_1" onchange="addPlayerInputs()">
+            <select id="team_1" onchange="addPlayerInputs('team_1')">
                 <!-- options from js -->
             </select>
 
             <label for="team_2">Team 2:</label>
-            <select id="team_2" onchange="addPlayerInputs()">
+            <select id="team_2" onchange="addPlayerInputs('team_2')">
                 <!-- options from js -->
             </select>
 
@@ -45,7 +48,10 @@
 				<!-- empty to begin with -->
             </div>
 
-            <button onclick="addGame()">Add Game</button>
+            <div>
+                <button onclick="addGame()">Add Game</button>
+                <button onclick="clearGameInput(); addPlayerInputs()">Clear</button>
+            </div>
         </div>
         <div class="input area2" id="game_edit">
             <!-- empty to begin with -->
