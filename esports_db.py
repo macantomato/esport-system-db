@@ -177,7 +177,15 @@ def edit_team():
 @app.post("/post/add_game")
 def add_game():
     param = request.get_json()
-    print(param)
+    date = param["date"]
+    team_1_id = param["team_1_id"]
+    team_2_id = param["team_2_id"]
+    team_1_score = param["team_1_score"]
+    team_2_score = param["team_2_score"]
+    player_stats = param["team_1_stats"] + param["team_2_stats"]
+    new_id = sql_add_game(date, team_1_id, team_2_id, team_1_score, team_2_score, player_stats)
+    print("Added game")
+    return jsonify({"game_id": new_id})
 
 @app.post("/post/get_games")
 def get_games():
@@ -341,8 +349,25 @@ def sql_edit_team(team_id, name, region, remove_id):
         connection.commit()
     return data
 
-def sqk_add_game():
-    pass
+def sql_add_game(date, team_1_id, team_2_id, team_1_score, team_2_score, player_stats):
+    cursor.execute("""
+        INSERT INTO Games (game_date, team_1_id, team_2_id, team_1_score, team_2_score)
+        VALUES (%s, %s, %s, %s, %s);
+    """, (date, team_1_id, team_2_id, team_1_score, team_2_score))
+    connection.commit()
+    game_id = cursor.lastrowid
+    for player in player_stats:
+        player_id = player["player_id"]
+        kills = player["kills"]
+        deaths = player["deaths"]
+        damage = player["damage"]
+        healing = player["healing"]
+        cursor.execute("""
+            INSERT INTO PlayerStats (game_id, player_id, kills, deaths, damage, healing)
+            VALUES (%s, %s, %s, %s, %s, %s);
+        """, (game_id, player_id, kills, deaths, damage, healing))
+        connection.commit()
+    return game_id
 
 def sql_get_games(sort = None, reverse = None):
     if not sort or reverse is None:

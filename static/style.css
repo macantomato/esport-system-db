@@ -57,8 +57,8 @@ nav a {
 
 .container {
     display: grid;
-    grid-template-columns: 3fr 6fr 5fr 3fr;
-    grid-template-rows: min-content 600px;
+    grid-template-columns: 1fr 2fr 2fr 1fr;
+    grid-template-rows: min-content min-content;
     grid-template-areas:
         ". input area2 ."
         ". list stats .";
@@ -75,6 +75,8 @@ nav a {
     gap: 4px;
     background-color: lightgray;
     padding-bottom: 16px;
+    max-height: 600px;
+    overflow-y: scroll;
 }
 .input input, select {
     font-family: Arial, Helvetica, sans-serif;
@@ -89,7 +91,7 @@ nav a {
 .list {
     grid-area: list;
     background-color: lightgray;
-    height: 100%;
+    max-height: 600px;
     overflow-y: scroll;
 }
 .list table {
@@ -116,6 +118,8 @@ nav a {
     padding: 24px;
     padding-top: 6px;
     background-color: lightgray;
+    box-sizing: border-box;
+    max-height: 600px;
     overflow-y: scroll;
 }
 .stats table {

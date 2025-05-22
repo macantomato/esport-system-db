@@ -457,8 +457,8 @@ function addPlayerInputs() {
 function addGame() {
     let date = new Date(document.getElementById("game_date").value);
     let date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`;
-    let team_1_id = document.getElementById("team_1").value;
-    let team_2_id = document.getElementById("team_2").value;
+    let team_1_id = parseInt(document.getElementById("team_1").value);
+    let team_2_id = parseInt(document.getElementById("team_2").value);
     let team_1_score = parseInt(document.getElementById("team_1_score").value);
     let team_2_score = parseInt(document.getElementById("team_2_score").value);
 
@@ -488,20 +488,36 @@ function addGame() {
         if (player.classList.contains("team_1_player")) {
             team_1_stats.push(stats);
         }
-        else {
+        else if (player.classList.contains("team_2_player")) {
             team_2_stats.push(stats);
         }
     }
 
-    if (team_1_stats.some(e => (isNaN(e["kills"]) || isNaN(e["deaths"]) || isNaN(e["damage"]) || isNaN(e["healing"])))
-        || team_1_stats.length != team_2_stats.length || team_1_stats.length < 1 || team_2_stats.length < 1
-        || !date || !team_1_id || !team_2_id || !team_1_score || !team_2_score
-        || team_1_id == team_2_id || team_1_id <= 0 || team_2_id <= 0 || team_1_score < 0 || team_2_score < 0) {
+    if (team_1_stats.some(e => (isNaN(e["kills"]) || isNaN(e["deaths"]) || isNaN(e["damage"]) || isNaN(e["healing"]))) ||
+        team_2_stats.some(e => (isNaN(e["kills"]) || isNaN(e["deaths"]) || isNaN(e["damage"]) || isNaN(e["healing"]))) ||
+        team_1_stats.length != team_2_stats.length || team_1_stats.length < 1 || team_2_stats.length < 1 ||
+        !date || !team_1_id || !team_2_id || isNaN(team_1_score) || isNaN(team_2_score) ||
+        team_1_id == team_2_id || team_1_id <= 0 || team_2_id <= 0 || team_1_score < 0 || team_2_score < 0) {
             alert("All fields needs to be filled with valid data!");
             return;
     }
 
-    //insert!!!
+    data = {
+        "date": date_str,
+        "team_1_id": team_1_id,
+        "team_2_id": team_2_id,
+        "team_1_score": team_1_score,
+        "team_2_score": team_2_score,
+        "team_1_stats": team_1_stats,
+        "team_2_stats": team_2_stats
+    }
+
+    postRequest("/post/add_game", (result) => {
+        setStatus("Added Game (ID: " + result["game_id"] + ")")
+        clearGameInput()
+        addPlayerInputs()
+        getGames()
+    }, data);
 }
 
 function getGames(sort = null) {
