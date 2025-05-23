@@ -183,6 +183,7 @@ function editPlayer(player_id) {
     postRequest("/post/edit_player", (result) => {
         setStatus("Edited Player (ID: " + result["player_id"] + ")");
         closeEdit();
+        closeStats();
         getPlayers();
     }, data);
 }
@@ -307,19 +308,18 @@ function getTeamInfo(team_id) {
             <p><b>Region: </b>${region}</p>
 
             <h3>Players</h3>
-            <ul>
-        `;
-        players.forEach(info => {
-            innerHTML += `
-                <li>${info[0]}: <b>${info[1]}</b></li>
-            `;
-        });
-        innerHTML += `
-            </ul>
-            <h3>Team Statistics</h3>
         `;
         if (result["players"].length) {
+            innerHTML += "<ul>";
+            players.forEach(info => {
+                innerHTML += `
+                    <li>${info[0]}: <b>${info[1]}</b></li>
+                `;
+            });
             innerHTML += `
+                </ul>
+
+                <h3>Team Statistics</h3>
                 <p><b>Games Competed In: </b>${num_games}</p>
                 <p><b>Games Won: </b>${num_wins}</p>
                 <p><b>Win Percentage: </b>${win_rate}%</p>
@@ -327,6 +327,9 @@ function getTeamInfo(team_id) {
         }
         else {
             innerHTML += `
+                <p>No Players</p>
+
+                <h3>Team Statistics</h3>
                 <p>No Stats Available</p>
             `;
         }
@@ -391,6 +394,7 @@ function editTeam(team_id) {
         }
         setStatus("Edited Team  (ID: " + team_id + ")");
         closeEdit();
+        closeStats();
         getTeams();
     }, data);
 }
@@ -456,7 +460,7 @@ function addPlayerInputs() {
 
 function addGame() {
     let date = new Date(document.getElementById("game_date").value);
-    let date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`;
+    let date_str = date.toLocaleDateString();
     let team_1_id = parseInt(document.getElementById("team_1").value);
     let team_2_id = parseInt(document.getElementById("team_2").value);
     let team_1_score = parseInt(document.getElementById("team_1_score").value);
@@ -464,35 +468,7 @@ function addGame() {
 
     let team_1_stats = [];
     let team_2_stats = [];
-    let stats_elements = document.getElementsByClassName("player_stats_inputs");
-    console.log(stats_elements)
-    for (let i = 0; i < stats_elements.length; i++) {
-        let player = stats_elements[i]
-        let stats = {};
-
-        let kills = parseInt(player.getElementsByClassName("kills")[0].value);
-        let deaths = parseInt(player.getElementsByClassName("deaths")[0].value);
-        let damage = parseInt(player.getElementsByClassName("damage")[0].value);
-        let healing = parseInt(player.getElementsByClassName("healing")[0].value);
-        let player_id = parseInt(player.getElementsByClassName("player_id")[0].value);
-
-        stats["kills"] = kills;
-        stats["deaths"] = deaths;
-        stats["damage"] = damage;
-        stats["healing"] = healing;
-        stats["player_id"] = player_id;
-
-        if (isNaN(kills) && isNaN(deaths) && isNaN(damage) && isNaN(healing)) {
-            continue;
-        }
-
-        if (player.classList.contains("team_1_player")) {
-            team_1_stats.push(stats);
-        }
-        else if (player.classList.contains("team_2_player")) {
-            team_2_stats.push(stats);
-        }
-    }
+    addPlayerStatsToArrays("player_stats_inputs", team_1_stats, team_2_stats);
 
     if (team_1_stats.some(e => (isNaN(e["kills"]) || isNaN(e["deaths"]) || isNaN(e["damage"]) || isNaN(e["healing"]))) ||
         team_2_stats.some(e => (isNaN(e["kills"]) || isNaN(e["deaths"]) || isNaN(e["damage"]) || isNaN(e["healing"]))) ||
@@ -503,7 +479,7 @@ function addGame() {
             return;
     }
 
-    data = {
+    let data = {
         "date": date_str,
         "team_1_id": team_1_id,
         "team_2_id": team_2_id,
@@ -511,7 +487,7 @@ function addGame() {
         "team_2_score": team_2_score,
         "team_1_stats": team_1_stats,
         "team_2_stats": team_2_stats
-    }
+    };
 
     postRequest("/post/add_game", (result) => {
         setStatus("Added Game (ID: " + result["game_id"] + ")")
@@ -544,7 +520,7 @@ function getGames(sort = null) {
             let winner_team_id = item["winner_team_id"];
 
             let date = new Date(item["game_date"]);
-            let date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`;
+            let date_str = date.toLocaleDateString();
 
             innerHTML += `
                 <tr onclick="getGameInfo(${item["game_id"]})" style="cursor: pointer">
@@ -591,7 +567,7 @@ function getGameInfo(game_id) {
         let winner_team_id = result["winner_team_id"];
 
         let date = new Date(result["date"]);
-        let date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`;
+        let date_str = date.toLocaleDateString();
 
         let winner_name = ""
         if (winner_team_id == team_1_id) {
@@ -601,7 +577,7 @@ function getGameInfo(game_id) {
             winner_name = team_2_name
         }
         else {
-            winner_name = "Draw"
+            winner_name = "(Draw)"
         }
 
         let innerHTML = `
@@ -612,10 +588,10 @@ function getGameInfo(game_id) {
             <p><b>Winner:</b> ${winner_name}</p>
 
             <h3>Player Stats</h3>
-            <h4>Team 1 - ${team_1_name}</h4>
+            <h4>${team_1_name}</h4>
         `;
         innerHTML += getTeamStatsHTML(team_1_stats);
-        innerHTML += `<h4>Team 2 - ${team_2_name}</h4>`;
+        innerHTML += `<h4>${team_2_name}</h4>`;
         innerHTML += getTeamStatsHTML(team_2_stats);
 
         innerHTML += `<button onclick="openGameEdit(
@@ -673,7 +649,7 @@ function openGameEdit(game_id, date_str, team_1_id, team_2_id, team_1_name, team
             </div>
 
             <div>
-                <button onclick=editTeam()>Confirm Changes</button>
+                <button onclick=editGame(${game_id})>Confirm Changes</button>
                 <button onclick=closeEdit()>Cancel</button>
             </div>
         `;
@@ -699,8 +675,40 @@ function openGameEdit(game_id, date_str, team_1_id, team_2_id, team_1_name, team
     }, team_ids)
 }
 
-function editTeam() {
+function editGame(game_id) {
+    let date = new Date(document.getElementById("edit_game_date").value);
+    let date_str = date.toLocaleDateString();
+    let team_1_score = parseInt(document.getElementById("edit_team_1_score").value);
+    let team_2_score = parseInt(document.getElementById("edit_team_2_score").value);
 
+    let team_1_stats = [];
+    let team_2_stats = [];
+    addPlayerStatsToArrays("edit_player_stats_inputs", team_1_stats, team_2_stats);
+
+    if (team_1_stats.some(e => (isNaN(e["kills"]) || isNaN(e["deaths"]) || isNaN(e["damage"]) || isNaN(e["healing"]))) ||
+        team_2_stats.some(e => (isNaN(e["kills"]) || isNaN(e["deaths"]) || isNaN(e["damage"]) || isNaN(e["healing"]))) ||
+        team_1_stats.length != team_2_stats.length || team_1_stats.length < 1 || team_2_stats.length < 1 ||
+        isNaN(date) || isNaN(team_1_score) || isNaN(team_2_score) ||
+        team_1_score < 0 || team_2_score < 0) {
+            alert("All fields needs to be filled with valid data!");
+            return;
+    }
+
+    let data = {
+        "game_id": game_id,
+        "date": date_str,
+        "team_1_score": team_1_score,
+        "team_2_score": team_2_score,
+        "team_1_stats": team_1_stats,
+        "team_2_stats": team_2_stats
+    };
+
+    postRequest("/post/edit_game", (result) => {
+        setStatus("Edited Game (ID: " + result["game_id"] + ")")
+        closeEdit();
+        closeStats();
+        getGames();
+    }, data);
 }
 
 function getStatsInputHTML(player, team, edit) {
@@ -740,7 +748,6 @@ function getTeamStatsHTML(team_stats) {
         <table>
             <thead>
                 <tr>
-                    <th><b>ID</b></th>
                     <th><b>Name</b></th>
                     <th><b>Kills</b></th>
                     <th><b>Deaths</b></th>
@@ -752,7 +759,6 @@ function getTeamStatsHTML(team_stats) {
             <tbody>
     `;
     team_stats.forEach(player => {
-        let player_id = player[0]
         let name = player[1]
         let kills = player[2]
         let deaths = player[3]
@@ -761,7 +767,6 @@ function getTeamStatsHTML(team_stats) {
         let healing = player[5]
         HTML += `
             <tr>
-                <th>${player_id}</th>
                 <th>${name}</th>
                 <th>${kills}</th>
                 <th>${deaths}</th>
@@ -776,6 +781,37 @@ function getTeamStatsHTML(team_stats) {
         </table>
     `;
     return HTML;
+}
+
+function addPlayerStatsToArrays(className, team_1_stats, team_2_stats) {
+    let stats_elements = document.getElementsByClassName(className);
+    for (let i = 0; i < stats_elements.length; i++) {
+        let player = stats_elements[i]
+        let stats = {};
+
+        let kills = parseInt(player.getElementsByClassName("kills")[0].value);
+        let deaths = parseInt(player.getElementsByClassName("deaths")[0].value);
+        let damage = parseInt(player.getElementsByClassName("damage")[0].value);
+        let healing = parseInt(player.getElementsByClassName("healing")[0].value);
+        let player_id = parseInt(player.getElementsByClassName("player_id")[0].value);
+
+        stats["kills"] = kills;
+        stats["deaths"] = deaths;
+        stats["damage"] = damage;
+        stats["healing"] = healing;
+        stats["player_id"] = player_id;
+
+        if (isNaN(kills) && isNaN(deaths) && isNaN(damage) && isNaN(healing)) {
+            continue;
+        }
+
+        if (player.classList.contains("team_1_player")) {
+            team_1_stats.push(stats);
+        }
+        else if (player.classList.contains("team_2_player")) {
+            team_2_stats.push(stats);
+        }
+    }
 }
 
 function handleGamesSort(key) {

@@ -232,6 +232,17 @@ def get_game_info():
     game_info = dict(zip(stats_keys, data))
     return jsonify(game_info)
 
+@app.post("/post/edit_game")
+def edit_game():
+    param = request.get_json()
+    game_id = param["game_id"]
+    date = param["date"]
+    team_1_score = param["team_1_score"]
+    team_2_score = param["team_2_score"]
+    player_stats = param["team_1_stats"] + param["team_2_stats"]
+    sql_edit_game(game_id, date, team_1_score, team_2_score, player_stats)
+    return jsonify({"game_id": game_id})
+
 #sql functions ---------------------------------------------------------------------
 def sql_setup():
     #create and/or use db
@@ -404,6 +415,23 @@ def sql_get_game_info(game_id):
     """)
     data.append(cursor.fetchall())
     return data
+
+def sql_edit_game(game_id, date, team_1_score, team_2_score, player_stats):
+    cursor.execute("UPDATE Games SET game_date = %s, team_1_score = %s, team_2_score = %s WHERE game_id = %s;", (date, team_1_score, team_2_score, game_id))
+    connection.commit()
+    cursor.execute(f"DELETE FROM PlayerStats WHERE game_id = {game_id}")
+    connection.commit()
+    for player in player_stats:
+        player_id = player["player_id"]
+        kills = player["kills"]
+        deaths = player["deaths"]
+        damage = player["damage"]
+        healing = player["healing"]
+        cursor.execute("""
+            INSERT INTO PlayerStats (game_id, player_id, kills, deaths, damage, healing)
+            VALUES (%s, %s, %s, %s, %s, %s);
+        """, (game_id, player_id, kills, deaths, damage, healing))
+        connection.commit()
 
 #main ---------------------------------------------------------------------
 if __name__ == "__main__":
