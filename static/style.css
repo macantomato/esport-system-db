@@ -57,7 +57,7 @@ nav a {
 
 .container {
     display: grid;
-    grid-template-columns: 1fr 2fr 2fr 1fr;
+    grid-template-columns: 1fr 3fr 3fr 1fr;
     grid-template-rows: min-content min-content;
     grid-template-areas:
         ". input area2 ."
@@ -75,6 +75,7 @@ nav a {
     gap: 4px;
     background-color: lightgray;
     padding-bottom: 16px;
+    box-sizing: border-box;
     max-height: 600px;
     overflow-y: scroll;
 }
@@ -131,24 +132,26 @@ nav a {
     padding: 4px;
 }
 
-#player_stats h4 {
+.stats_field h4 {
     text-align: left;
     margin: 6px 24px 0px 24px;
     border-bottom: 1px dotted black;
 }
 
-.player_stats_inputs {
+.player_stats_inputs, .edit_player_stats_inputs {
     display: flex;
     flex-wrap: nowrap;
     gap: 6px;
     padding: 6px 24px 6px 24px;
 }
-.player_stats_inputs .down {
+
+.player_stats_inputs .down, .edit_player_stats_inputs .down {
     flex-grow: 1;
     text-align: left;
     margin-right: 0;
 }
-.player_stats_inputs input {
+
+.player_stats_inputs input, .edit_player_stats_inputs input {
     width: 100%;
     box-sizing: border-box;
 }

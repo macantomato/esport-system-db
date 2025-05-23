@@ -70,10 +70,10 @@ BEGIN
 END %%
 delimiter ;
 
--- trigger for calculating winner of game
-DROP TRIGGER IF EXISTS trSetWinner;
+-- triggers for calculating winner of game
+DROP TRIGGER IF EXISTS trSetWinnerInsert;
 delimiter %%
-CREATE TRIGGER trSetWinner
+CREATE TRIGGER trSetWinnerInsert
 BEFORE INSERT ON Games
 FOR EACH ROW
 BEGIN
@@ -81,6 +81,22 @@ BEGIN
         SET NEW.winner_team_id = NEW.team_1_id;
     ELSEIF NEW.team_2_score > NEW.team_1_score THEN
         SET NEW.winner_team_id = NEW.team_2_id;
+    END IF;
+END %%
+delimiter ;
+
+DROP TRIGGER IF EXISTS trSetWinnerUpdate;
+delimiter %%
+CREATE TRIGGER trSetWinnerUpdate
+BEFORE UPDATE ON Games
+FOR EACH ROW
+BEGIN
+    IF NEW.team_1_score > NEW.team_2_score THEN
+        SET NEW.winner_team_id = NEW.team_1_id;
+    ELSEIF NEW.team_2_score > NEW.team_1_score THEN
+        SET NEW.winner_team_id = NEW.team_2_id;
+    ELSE
+        SET NEW.winner_team_id = NULL;
     END IF;
 END %%
 delimiter ;

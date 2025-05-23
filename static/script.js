@@ -425,7 +425,7 @@ function addPlayerInputs() {
         return
     }
 
-    data = {
+    let data = {
         "team_1_id": team_1_id,
         "team_2_id": team_2_id,
     }
@@ -440,13 +440,13 @@ function addPlayerInputs() {
         if (team_1_players) {
             innerHTML += "<h3 class='team_title'>Team 1</h3>";
             team_1_players.forEach(player => {
-                innerHTML += getStatsInputHTML(player, "team_1")
+                innerHTML += getStatsInputHTML(player, "team_1", false)
             });
         }
         if (team_2_players) {
             innerHTML += "<h3 class='team_title'>Team 2</h3>";
             team_2_players.forEach(player => {
-                innerHTML += getStatsInputHTML(player, "team_2")
+                innerHTML += getStatsInputHTML(player, "team_2", false)
             });
         }
 
@@ -465,15 +465,16 @@ function addGame() {
     let team_1_stats = [];
     let team_2_stats = [];
     let stats_elements = document.getElementsByClassName("player_stats_inputs");
+    console.log(stats_elements)
     for (let i = 0; i < stats_elements.length; i++) {
         let player = stats_elements[i]
         let stats = {};
 
-        kills = parseInt(player.getElementsByClassName("kills")[0].value);
-        deaths = parseInt(player.getElementsByClassName("deaths")[0].value);
-        damage = parseInt(player.getElementsByClassName("damage")[0].value);
-        healing = parseInt(player.getElementsByClassName("healing")[0].value);
-        player_id = parseInt(player.getElementsByClassName("player_id")[0].value);
+        let kills = parseInt(player.getElementsByClassName("kills")[0].value);
+        let deaths = parseInt(player.getElementsByClassName("deaths")[0].value);
+        let damage = parseInt(player.getElementsByClassName("damage")[0].value);
+        let healing = parseInt(player.getElementsByClassName("healing")[0].value);
+        let player_id = parseInt(player.getElementsByClassName("player_id")[0].value);
 
         stats["kills"] = kills;
         stats["deaths"] = deaths;
@@ -496,7 +497,7 @@ function addGame() {
     if (team_1_stats.some(e => (isNaN(e["kills"]) || isNaN(e["deaths"]) || isNaN(e["damage"]) || isNaN(e["healing"]))) ||
         team_2_stats.some(e => (isNaN(e["kills"]) || isNaN(e["deaths"]) || isNaN(e["damage"]) || isNaN(e["healing"]))) ||
         team_1_stats.length != team_2_stats.length || team_1_stats.length < 1 || team_2_stats.length < 1 ||
-        !date || !team_1_id || !team_2_id || isNaN(team_1_score) || isNaN(team_2_score) ||
+        isNaN(date) || !team_1_id || !team_2_id || isNaN(team_1_score) || isNaN(team_2_score) ||
         team_1_id == team_2_id || team_1_id <= 0 || team_2_id <= 0 || team_1_score < 0 || team_2_score < 0) {
             alert("All fields needs to be filled with valid data!");
             return;
@@ -538,19 +539,23 @@ function getGames(sort = null) {
                 <tbody>
         `;
         result.forEach(item => {
-            let winner_is_team_1 = item["winner_team_id"] == item["team_1_id"]
-            let date = new Date(item["game_date"])
-            let date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`
+            let team_1_id = item["team_1_id"];
+            let team_2_id = item["team_2_id"];
+            let winner_team_id = item["winner_team_id"];
+
+            let date = new Date(item["game_date"]);
+            let date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`;
+
             innerHTML += `
                 <tr onclick="getGameInfo(${item["game_id"]})" style="cursor: pointer">
                     <th>${item["game_id"]}</th>
                     <th>${date_str}</th>
-                    <th>${winner_is_team_1 ? "<b>" : ""}${item["team_1_name"]}${winner_is_team_1 ? "</b>" : ""}</th>
+                    <th>${winner_team_id == team_1_id ? "<b>" : ""}${item["team_1_name"]}${winner_team_id == team_1_id ? "</b>" : ""}</th>
                     <th>
-                        ${winner_is_team_1 ? "<b>" : ""}${item["team_1_score"]}${winner_is_team_1 ? "</b>" : ""} -
-                        ${winner_is_team_1 ? "" : "<b>"}${item["team_2_score"]}${winner_is_team_1 ? "" : "</b>"}
+                        ${winner_team_id == team_1_id ? "<b>" : ""}${item["team_1_score"]}${winner_team_id == team_1_id ? "</b>" : ""} -
+                        ${winner_team_id == team_2_id ? "<b>" : ""}${item["team_2_score"]}${winner_team_id == team_2_id ? "</b>" : ""}
                     </th>
-                    <th>${winner_is_team_1 ? "" : "<b>"}${item["team_2_name"]}${winner_is_team_1 ? "" : "</b>"}</th>
+                    <th>${winner_team_id == team_2_id ? "<b>" : ""}${item["team_2_name"]}${winner_team_id == team_2_id ? "</b>" : ""}</th>
                 </tr>
             `;
         });
@@ -578,39 +583,132 @@ function getGameInfo(game_id) {
         let team_1_id = result["team_1_id"];
         let team_1_name = result["team_1_name"];
         let team_1_score = result["team_1_score"];
+        let team_1_stats = result["team_1_stats"];
         let team_2_id = result["team_2_id"];
         let team_2_name = result["team_2_name"];
         let team_2_score = result["team_2_score"];
+        let team_2_stats = result["team_2_stats"]
         let winner_team_id = result["winner_team_id"];
 
         let date = new Date(result["date"]);
         let date_str = `${date.getFullYear()}-${date.getMonth() < 10 ? "0" : ""}${date.getMonth()}-${date.getDate() < 10 ? "0" : ""}${date.getDate()}`;
+
+        let winner_name = ""
+        if (winner_team_id == team_1_id) {
+            winner_name = team_1_name
+        }
+        else if (winner_team_id == team_2_id) {
+            winner_name = team_2_name
+        }
+        else {
+            winner_name = "Draw"
+        }
 
         let innerHTML = `
             <h3>Game Info</h3>
             <p><b>Date:</b> ${date_str}</p>
             <p><b>${team_1_name}</b> vs <b>${team_2_name}</b></p>
             <p><b>Score:</b> ${team_1_score}–${team_2_score}</p>
-            <p><b>Winner:</b> ${winner_team_id == team_1_id ? team_1_name : team_2_name}</p>
+            <p><b>Winner:</b> ${winner_name}</p>
 
             <h3>Player Stats</h3>
             <h4>Team 1 - ${team_1_name}</h4>
         `;
-        innerHTML += getTeamStatsHTML(result["team_1_stats"]);
+        innerHTML += getTeamStatsHTML(team_1_stats);
         innerHTML += `<h4>Team 2 - ${team_2_name}</h4>`;
-        innerHTML += getTeamStatsHTML(result["team_2_stats"]);
+        innerHTML += getTeamStatsHTML(team_2_stats);
+
+        innerHTML += `<button onclick="openGameEdit(
+                ${game_id}, '${date_str}', ${team_1_id}, ${team_2_id}, '${team_1_name}', '${team_2_name}', ${team_1_score}, ${team_2_score},
+                JSON.parse(decodeURIComponent('${encodeURIComponent(JSON.stringify(team_1_stats))}')),
+                JSON.parse(decodeURIComponent('${encodeURIComponent(JSON.stringify(team_2_stats))}'))
+            )">Edit Game</button>`;
         innerHTML += `<button onclick="closeStats()">Close</button>`;
 
         document.getElementById("game_stats").innerHTML = innerHTML;
     }, {game_id});
 }
 
-function getStatsInputHTML(player, team) {
+function openGameEdit(game_id, date_str, team_1_id, team_2_id, team_1_name, team_2_name, team_1_score, team_2_score, team_1_stats, team_2_stats) {
+    let team_ids = {
+        "team_1_id": team_1_id,
+        "team_2_id": team_2_id
+    }
+
+    postRequest("/post/get_both_team_players", (result) => {
+        let team_1_players = result["team_1"]
+        let team_2_players = result["team_2"]
+
+        let innerHTML = `
+            <h3>Edit Game</h3>
+            <h4>ID: ${game_id}</h4>
+
+            <label for="edit_game_date">Date:</label>
+            <input type="date" id="edit_game_date" value="${date_str}">
+
+            <div>
+                <div class="down">
+                    <label for="edit_team_1_score">${team_1_name} Score:</label>
+                    <input type="number" id="edit_team_1_score" placeholder="Enter score" value="${team_1_score}">
+                </div>
+
+				<div class="down">
+					<label for="edit_team_2_score">${team_2_name} Score:</label>
+					<input type="number" id="edit_team_2_score" placeholder="Enter score" value="${team_2_score}">
+				</div>
+            </div>
+
+            <div class="stats_field">
+                <h3>Edit Player Stats</h3>
+                <h3 class="team_title">${team_1_name}</h3>
+        `;
+        team_1_players.forEach(player => {
+            innerHTML += getStatsInputHTML(player, "team_1", true);
+        });
+        innerHTML += `<h3 class="team_title">${team_2_name}</h3>`;
+        team_2_players.forEach(player => {
+            innerHTML += getStatsInputHTML(player, "team_2", true);
+        });
+        innerHTML += `
+            </div>
+
+            <div>
+                <button onclick=editTeam()>Confirm Changes</button>
+                <button onclick=closeEdit()>Cancel</button>
+            </div>
+        `;
+
+        document.getElementById("game_edit").innerHTML = innerHTML;
+
+        let player_stats = [...team_1_stats, ...team_2_stats];
+        let stats_elements = document.getElementsByClassName("edit_player_stats_inputs")
+        for (let i = 0; i < stats_elements.length; i++) {
+            let stats_inputs = stats_elements[i]
+            let player_id = parseInt(stats_inputs.getElementsByClassName("player_id")[0].value);
+
+            let index = player_stats.findIndex(p => p[0] == player_id)
+            if (index == -1) {
+                continue
+            }
+            let stats = player_stats[index]
+            stats_inputs.getElementsByClassName("kills")[0].value = stats[2];
+            stats_inputs.getElementsByClassName("deaths")[0].value = stats[3];
+            stats_inputs.getElementsByClassName("damage")[0].value = stats[4];
+            stats_inputs.getElementsByClassName("healing")[0].value = stats[5];
+        }
+    }, team_ids)
+}
+
+function editTeam() {
+
+}
+
+function getStatsInputHTML(player, team, edit) {
     let player_id = player[0];
     let name = player[1];
     innerHTML = `
         <h4>${name}</h4>
-        <div class="player_stats_inputs ${team}_player">
+        <div class="${edit ? "edit_" : ""}player_stats_inputs ${team}_player">
             <div class="down">
                 <label>Kills:</label>
                 <input type="number" class="kills" placeholder="Enter kills">

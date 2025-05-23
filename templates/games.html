@@ -22,15 +22,21 @@
             <label for="game_date">Date:</label>
             <input type="date" id="game_date">
 
-            <label for="team_1">Team 1:</label>
-            <select id="team_1" onchange="addPlayerInputs('team_1')">
-                <!-- options from js -->
-            </select>
+            <div>
+                <div class="down">
+                    <label for="team_1">Team 1:</label>
+                    <select id="team_1" onchange="addPlayerInputs('team_1')">
+                        <!-- options from js -->
+                    </select>
+                </div>
 
-            <label for="team_2">Team 2:</label>
-            <select id="team_2" onchange="addPlayerInputs('team_2')">
-                <!-- options from js -->
-            </select>
+                <div class="down">
+                    <label for="team_2">Team 2:</label>
+                    <select id="team_2" onchange="addPlayerInputs('team_2')">
+                        <!-- options from js -->
+                    </select>
+                </div>
+            </div>
 
             <div>
                 <div class="down">
@@ -44,7 +50,7 @@
 				</div>
             </div>
 
-			<div id="player_stats">
+			<div class="stats_field" id="player_stats">
 				<!-- empty to begin with -->
             </div>
 
