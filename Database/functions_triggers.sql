@@ -52,7 +52,7 @@ RETURNS INTEGER
 DETERMINISTIC READS SQL DATA
 BEGIN
 	DECLARE _team_id INTEGER;
-    SET _team_id = (SELECT team_id FROM TeamPlayers WHERE player_id = _player_id);
+    SELECT team_id INTO _team_id FROM TeamPlayers WHERE player_id = _player_id;
     RETURN _team_id;
 END %%
 delimiter ;
@@ -65,7 +65,7 @@ RETURNS VARCHAR(30)
 DETERMINISTIC READS SQL DATA
 BEGIN
 	DECLARE _name VARCHAR(30);
-    SET _name = (SELECT name FROM Teams WHERE team_id = _team_id);
+    SELECT name INTO _name FROM Teams WHERE team_id = _team_id;
     RETURN _name;
 END %%
 delimiter ;

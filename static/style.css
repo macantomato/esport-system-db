@@ -79,7 +79,8 @@ nav a {
     max-height: 600px;
     overflow-y: scroll;
 }
-.input input, select {
+.input input,
+.input select {
     font-family: Arial, Helvetica, sans-serif;
     padding: 4px;
     align-self: center;
@@ -100,9 +101,12 @@ nav a {
     min-width: min-content;
     border-collapse: collapse;
 }
-.list tr, th {
+.list tr,
+.list th {
     padding: 4px;
     font-weight: normal;
+}
+.list th {
     border: 1px solid black;
 }
 .list thead th:hover {
@@ -127,9 +131,20 @@ nav a {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 12px;
+    border-top: 1px solid black;
+    border-left: 1px solid black;
 }
-.stats table tr, th {
+.stats table tr {
+    display: grid;
+    padding: 0;
+    grid-template-columns: 5fr 2fr 2fr 3fr 4fr 4fr;
+}
+.stats table th {
+    font-weight: normal;
     padding: 4px;
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+    border-collapse: collapse;
 }
 
 .stats_field h4 {
@@ -138,20 +153,21 @@ nav a {
     border-bottom: 1px dotted black;
 }
 
-.player_stats_inputs, .edit_player_stats_inputs {
+.player_stats_inputs,
+.edit_player_stats_inputs {
     display: flex;
     flex-wrap: nowrap;
     gap: 6px;
     padding: 6px 24px 6px 24px;
 }
-
-.player_stats_inputs .down, .edit_player_stats_inputs .down {
+.player_stats_inputs .down,
+.edit_player_stats_inputs .down {
     flex-grow: 1;
     text-align: left;
     margin-right: 0;
 }
-
-.player_stats_inputs input, .edit_player_stats_inputs input {
+.player_stats_inputs input,
+.edit_player_stats_inputs input {
     width: 100%;
     box-sizing: border-box;
 }

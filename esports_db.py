@@ -82,6 +82,7 @@ def get_player_info():
         "country",
         "team_name",
         "num_games",
+        "num_games_won",
         "total_kills",
         "total_deaths",
         "avg_damage",
@@ -280,7 +281,9 @@ def sql_get_player_info(player_id):
     try:
         cursor.execute(f"SELECT name FROM Teams WHERE team_id = getPlayerTeam({player_id});")
         data.extend(cursor.fetchone())
-        cursor.execute(f"SELECT count(*), CAST(sum(kills) AS UNSIGNED), CAST(sum(deaths) AS UNSIGNED), CAST(avg(damage) AS UNSIGNED), CAST(avg(healing) AS UNSIGNED) FROM PlayerStats WHERE player_id = {player_id};")
+        cursor.execute(f"SELECT count(*) FROM PlayerStats ps JOIN Games g ON ps.game_id = g.game_id WHERE g.winner_team_id = getPlayerTeam(ps.player_id) AND ps.player_id = {player_id};")
+        data.extend(cursor.fetchone())
+        cursor.execute(f"SELECT count(*), sum(kills), sum(deaths), CAST(avg(damage) AS UNSIGNED), CAST(avg(healing) AS UNSIGNED) FROM PlayerStats WHERE player_id = {player_id};")
         data.extend(cursor.fetchone())
     except:
         data.extend([None] * 6)
