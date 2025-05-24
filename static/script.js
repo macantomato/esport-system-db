@@ -33,7 +33,7 @@ function postRequest(url, callback, data = null) {
 function getRecentGames() {
     let sort = {
         "sort": "game_date",
-        "reverse": true
+        "reverse": false
     };
 
     postRequest("/post/get_games", games => {
