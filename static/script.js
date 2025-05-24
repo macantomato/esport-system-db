@@ -29,42 +29,44 @@ function postRequest(url, callback, data = null) {
     .then(result => callback(result))
 }
 
-// home page  --------------------------------------------------------------------------
-
+// Home page  --------------------------------------------------------------------------
 function getRecentGames() {
-  postRequest("/post/get_games", games => {
-    const recent = games
-      .sort((a, b) => new Date(b.game_date) - new Date(a.game_date))
-      .slice(0, 5);
+    let sort = {
+        "sort": "game_date",
+        "reverse": true
+    };
 
-    let html = `
-      <h3>Recent 5 Games</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th><th>Date</th><th>Team 1</th><th>Score</th><th>Team 2</th>
-          </tr>
-        </thead>
-        <tbody>`;
-
-    recent.forEach(g => {
-      const d = new Date(g.game_date).toLocaleDateString();
-      html += `
-        <tr>
-          <td>${g.game_id}</td>
-          <td>${d}</td>
-          <td>${g.team_1_name}</td>
-          <td>${g.team_1_score}–${g.team_2_score}</td>
-          <td>${g.team_2_name}</td>
-        </tr>`;
-    });
-
-    html += `
-        </tbody>
-      </table>`;
-
-    document.getElementById("recent_games_list").innerHTML = html;
-  });
+    postRequest("/post/get_games", games => {
+        const recent = games.slice(0, 5);
+        let innerHTML = `
+            <h3>Recent 5 Games</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <td>ID</td><td>Date</td><td>Team 1</td><td>Score</td><td>Team 2</td>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        recent.forEach(game => {
+            let date = new Date(game.game_date);
+            let date_str = date.toLocaleDateString();
+            innerHTML += `
+                <tr>
+                    <td>${game.game_id}</td>
+                    <td>${date_str}</td>
+                    <td>${game.team_1_name}</td>
+                    <td>${game.team_1_score}–${game.team_2_score}</td>
+                    <td>${game.team_2_name}</td>
+                </tr>
+            `;
+        });
+        innerHTML += `
+                </tbody>
+            </table>
+        `;
+        document.getElementById("recent_games_list").innerHTML = innerHTML;
+    }, sort);
 }
 
 // Players page ------------------------------------------------------------
@@ -99,10 +101,10 @@ function getPlayers(sort = null) {
             <table>
                 <thead>
                     <tr>
-                        <th onclick="handleplayersSort('player_id')" style="cursor: pointer"><b>ID</b></th>
-                        <th onclick="handleplayersSort('name')" style="cursor: pointer"><b>Name</b></th>
-                        <th onclick="handleplayersSort('age')" style="cursor: pointer"><b>Age</b></th>
-                        <th onclick="handleplayersSort('country')" style="cursor: pointer"><b>Country</b></th>
+                        <td onclick="handleplayersSort('player_id')" style="cursor: pointer"><b>ID</b></td>
+                        <td onclick="handleplayersSort('name')" style="cursor: pointer"><b>Name</b></td>
+                        <td onclick="handleplayersSort('age')" style="cursor: pointer"><b>Age</b></td>
+                        <td onclick="handleplayersSort('country')" style="cursor: pointer"><b>Country</b></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -110,10 +112,10 @@ function getPlayers(sort = null) {
         result.forEach(item => {
             innerHTML += `
                 <tr onclick="getPlayerInfo(${item["player_id"]})" style="cursor: pointer">
-                    <th>${item["player_id"]}</th>
-                    <th>${item["name"]}</th>
-                    <th>${item["age"]}</th>
-                    <th>${item["country"]}</th>
+                    <td>${item["player_id"]}</td>
+                    <td>${item["name"]}</td>
+                    <td>${item["age"]}</td>
+                    <td>${item["country"]}</td>
                 </tr>
             `;
         });
@@ -136,6 +138,8 @@ function getPlayerInfo(player_id) {
         let team_name = result["team_name"] ? result["team_name"] : "No Team"
 
         let num_games = result["num_games"];
+        let num_wins = result["num_games_won"];
+        let win_rate = num_games ? parseInt((num_wins / num_games) * 100) : 0;
         let total_kills = result["total_kills"] ? result["total_kills"] : 0;
         let total_deaths = result["total_deaths"] ? result["total_deaths"]: 0;
         let kd = total_deaths ? parseFloat(result["total_kills"] / result["total_deaths"]).toFixed(2) : total_kills;
@@ -154,6 +158,8 @@ function getPlayerInfo(player_id) {
         if (result["team_name"]) {
             innerHTML += `
                 <p><b>Games Played: </b>${num_games}</p>
+                <p><b>Games Won: </b>${num_wins}</p>
+                <p><b>Win Percentage: </b>${win_rate}%</p>
                 <p><b>Total Kills: </b>${total_kills}</p>
                 <p><b>Total Deaths: </b>${total_deaths}</p>
                 <p><b>K/D: </b>${kd}</p>
@@ -292,9 +298,9 @@ function getTeams(sort = null) {
             <table>
                 <thead>
                     <tr>
-                        <th onclick="handleTeamsSort('team_id')" style="cursor: pointer"><b>ID</b></th>
-                        <th onclick="handleTeamsSort('name')" style="cursor: pointer"><b>Name</b></th>
-                        <th onclick="handleTeamsSort('region')" style="cursor: pointer"><b>Region</b></th>
+                        <td onclick="handleTeamsSort('team_id')" style="cursor: pointer"><b>ID</b></td>
+                        <td onclick="handleTeamsSort('name')" style="cursor: pointer"><b>Name</b></td>
+                        <td onclick="handleTeamsSort('region')" style="cursor: pointer"><b>Region</b></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -306,9 +312,9 @@ function getTeams(sort = null) {
             let region = item["region"];
             innerHTML += `
                 <tr onclick="getTeamInfo(${item["team_id"]})" style="cursor: pointer">
-                    <th>${team_id}</th>
-                    <th>${name}</th>
-                    <th>${region}</th>
+                    <td>${team_id}</td>
+                    <td>${name}</td>
+                    <td>${region}</td>
                 </tr>
             `;
             teams.push({
@@ -336,9 +342,9 @@ function getTeamInfo(team_id) {
 
         let players = result["players"].length ? result["players"] : ["No Players"];
 
-        let num_games = result["num_games"] ? result["num_games"] : 0;
-        let num_wins = result["num_wins"] ? result["num_wins"] : 0;
-        let win_rate = result["num_games"] ? parseInt((num_wins / num_games) * 100) : 0;
+        let num_games = result["num_games"];
+        let num_wins = result["num_wins"];
+        let win_rate = num_games ? parseInt((num_wins / num_games) * 100) : 0;
 
         let innerHTML = `
             <h3>Team Info</h3>
@@ -543,11 +549,11 @@ function getGames(sort = null) {
             <table>
                 <thead>
                     <tr>
-                        <th onclick="handleGamesSort('game_id')" style="cursor: pointer"><b>ID</b></th>
-                        <th onclick="handleGamesSort('game_date')" style="cursor: pointer"><b>Date</b></th>
-                        <th onclick="handleGamesSort('team_1_name')" style="cursor: pointer"><b>Team 1</b></th>
-                        <th onclick="handleGamesSort('abs(team_1_score - team_2_score)')" style="cursor: pointer"><b>Score</b></th>
-                        <th onclick="handleGamesSort('team_2_name')" style="cursor: pointer"><b>Team 2</b></th>
+                        <td onclick="handleGamesSort('game_id')" style="cursor: pointer"><b>ID</b></td>
+                        <td onclick="handleGamesSort('game_date')" style="cursor: pointer"><b>Date</b></td>
+                        <td onclick="handleGamesSort('team_1_name')" style="cursor: pointer"><b>Team 1</b></td>
+                        <td onclick="handleGamesSort('abs(team_1_score - team_2_score)')" style="cursor: pointer"><b>Score</b></td>
+                        <td onclick="handleGamesSort('team_2_name')" style="cursor: pointer"><b>Team 2</b></td>
                     </tr>
                 </thead>
                 <tbody>
@@ -562,14 +568,14 @@ function getGames(sort = null) {
 
             innerHTML += `
                 <tr onclick="getGameInfo(${item["game_id"]})" style="cursor: pointer">
-                    <th>${item["game_id"]}</th>
-                    <th>${date_str}</th>
-                    <th>${winner_team_id == team_1_id ? "<b>" : ""}${item["team_1_name"]}${winner_team_id == team_1_id ? "</b>" : ""}</th>
-                    <th>
+                    <td>${item["game_id"]}</td>
+                    <td>${date_str}</td>
+                    <td>${winner_team_id == team_1_id ? "<b>" : ""}${item["team_1_name"]}${winner_team_id == team_1_id ? "</b>" : ""}</td>
+                    <td>
                         ${winner_team_id == team_1_id ? "<b>" : ""}${item["team_1_score"]}${winner_team_id == team_1_id ? "</b>" : ""} -
                         ${winner_team_id == team_2_id ? "<b>" : ""}${item["team_2_score"]}${winner_team_id == team_2_id ? "</b>" : ""}
-                    </th>
-                    <th>${winner_team_id == team_2_id ? "<b>" : ""}${item["team_2_name"]}${winner_team_id == team_2_id ? "</b>" : ""}</th>
+                    </td>
+                    <td>${winner_team_id == team_2_id ? "<b>" : ""}${item["team_2_name"]}${winner_team_id == team_2_id ? "</b>" : ""}</td>
                 </tr>
             `;
         });
@@ -786,12 +792,12 @@ function getTeamStatsHTML(team_stats) {
         <table>
             <thead>
                 <tr>
-                    <th><b>Name</b></th>
-                    <th><b>Kills</b></th>
-                    <th><b>Deaths</b></th>
-                    <th><b>K/D</b></th>
-                    <th><b>Damage</b></th>
-                    <th><b>Healing</b></th>
+                    <td><b>Name</b></td>
+                    <td><b>Kills</b></td>
+                    <td><b>Deaths</b></td>
+                    <td><b>K/D</b></td>
+                    <td><b>Damage</b></td>
+                    <td><b>Healing</b></td>
                 </tr>
             </thead>
             <tbody>
@@ -805,12 +811,12 @@ function getTeamStatsHTML(team_stats) {
         let healing = player[5]
         HTML += `
             <tr>
-                <th>${name}</th>
-                <th>${kills}</th>
-                <th>${deaths}</th>
-                <th>${kd}</th>
-                <th>${damage}</th>
-                <th>${healing}</th>
+                <td>${name}</td>
+                <td>${kills}</td>
+                <td>${deaths}</td>
+                <td>${kd}</td>
+                <td>${damage}</td>
+                <td>${healing}</td>
             </tr>
         `;
     });

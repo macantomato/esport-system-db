@@ -102,14 +102,13 @@ nav a {
     border-collapse: collapse;
 }
 .list tr,
-.list th {
+.list td {
     padding: 4px;
-    font-weight: normal;
 }
-.list th {
+.list td {
     border: 1px solid black;
 }
-.list thead th:hover {
+.list thead td:hover {
     background-color: lightblue;
 }
 .list tbody tr:hover {
@@ -139,8 +138,7 @@ nav a {
     padding: 0;
     grid-template-columns: 5fr 2fr 2fr 3fr 4fr 4fr;
 }
-.stats table th {
-    font-weight: normal;
+.stats table td {
     padding: 4px;
     border-right: 1px solid black;
     border-bottom: 1px solid black;
