@@ -136,8 +136,6 @@ function getPlayerInfo(player_id) {
         let team_name = result["team_name"] ? result["team_name"] : "No Team"
 
         let num_games = result["num_games"];
-        let num_games_won = result["num_games_won"];
-        let win_rate = num_games ? parseInt((num_games_won / num_games) * 100) : 0;
         let total_kills = result["total_kills"] ? result["total_kills"] : 0;
         let total_deaths = result["total_deaths"] ? result["total_deaths"]: 0;
         let kd = total_deaths ? parseFloat(result["total_kills"] / result["total_deaths"]).toFixed(2) : total_kills;
@@ -156,8 +154,6 @@ function getPlayerInfo(player_id) {
         if (result["team_name"]) {
             innerHTML += `
                 <p><b>Games Played: </b>${num_games}</p>
-                <p><b>Games Won: </b>${num_games_won}</p>
-                <p><b>Win Percentage: </b>${win_rate}%</p>
                 <p><b>Total Kills: </b>${total_kills}</p>
                 <p><b>Total Deaths: </b>${total_deaths}</p>
                 <p><b>K/D: </b>${kd}</p>
@@ -340,9 +336,9 @@ function getTeamInfo(team_id) {
 
         let players = result["players"].length ? result["players"] : ["No Players"];
 
-        let num_games = result["num_games"];
-        let num_wins = result["num_wins"];
-        let win_rate = num_games ? parseInt((num_wins / num_games) * 100) : 0;
+        let num_games = result["num_games"] ? result["num_games"] : 0;
+        let num_wins = result["num_wins"] ? result["num_wins"] : 0;
+        let win_rate = result["num_games"] ? parseInt((num_wins / num_games) * 100) : 0;
 
         let innerHTML = `
             <h3>Team Info</h3>
