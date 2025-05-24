@@ -6,7 +6,7 @@
     <title>Esports DB</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body onclick="clearStatus()">
+<body onload="getRecentGames()" onclick="clearStatus()">
     <h1>Esports DB</h1>
     <nav>
       <a href="{{ url_for('intro') }}">Home</a>
@@ -15,6 +15,11 @@
       <a href="{{ url_for('games_page') }}">Games</a>
     </nav>
     <p id="status"></p>
+    <div class="container">
+    <div class="input"></div>
+    <div class="input area2"></div>
+    <div class="list" id="recent_games_list"></div>
+  </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

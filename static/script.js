@@ -29,6 +29,44 @@ function postRequest(url, callback, data = null) {
     .then(result => callback(result))
 }
 
+// home page  --------------------------------------------------------------------------
+
+function getRecentGames() {
+  postRequest("/post/get_games", games => {
+    const recent = games
+      .sort((a, b) => new Date(b.game_date) - new Date(a.game_date))
+      .slice(0, 5);
+
+    let html = `
+      <h3>Recent 5 Games</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th><th>Date</th><th>Team 1</th><th>Score</th><th>Team 2</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    recent.forEach(g => {
+      const d = new Date(g.game_date).toLocaleDateString();
+      html += `
+        <tr>
+          <td>${g.game_id}</td>
+          <td>${d}</td>
+          <td>${g.team_1_name}</td>
+          <td>${g.team_1_score}–${g.team_2_score}</td>
+          <td>${g.team_2_name}</td>
+        </tr>`;
+    });
+
+    html += `
+        </tbody>
+      </table>`;
+
+    document.getElementById("recent_games_list").innerHTML = html;
+  });
+}
+
 // Players page ------------------------------------------------------------
 function addPlayer() {
     let name = document.getElementById("player_name").value.trim();
