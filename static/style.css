@@ -13,6 +13,10 @@ h4 {
     margin-top: 0;
     margin-bottom: 10px;
 }
+h5 {
+    font-size: 18px;
+    font-weight: normal;
+}
 
 label {
     margin-top: 4px;
@@ -78,6 +82,7 @@ nav a {
     box-sizing: border-box;
     max-height: 600px;
     overflow-y: scroll;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 .input input,
 .input select {
@@ -95,6 +100,7 @@ nav a {
     background-color: lightgray;
     max-height: 600px;
     overflow-y: scroll;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 .list table {
     width: 100%;
@@ -125,8 +131,10 @@ nav a {
     box-sizing: border-box;
     max-height: 600px;
     overflow-y: scroll;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 .stats table {
+    background-color: lightblue;
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 12px;
@@ -173,4 +181,29 @@ nav a {
 .team_title {
     margin-left: 24px;
     text-align: left;
+}
+
+#main {
+    background-color: lightgray;
+    width: 50%;
+    display: inline-flex;
+    flex-direction: column;
+    padding-bottom: 24px;
+    align-items: center;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+#main table {
+    background-color: lightblue;
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+    cursor: pointer;
+}
+#main table td {
+    padding: 4px;
+    border: 1px solid black;
+}
+
+.home_list {
+    width: 70%;
 }

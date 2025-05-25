@@ -30,34 +30,32 @@ function postRequest(url, callback, data = null) {
 }
 
 // Home page  --------------------------------------------------------------------------
-function getRecentGames() {
-    let sort = {
-        "sort": "game_date",
-        "reverse": false
-    };
-
-    postRequest("/post/get_games", games => {
-        const recent = games.slice(0, 5);
+function getHomePageInfo() {
+    postRequest("/post/get_home_page_info", (result) => {
+        //recent games
+        let recent_games = result["recent_games"];
         let innerHTML = `
-            <h3>Recent 5 Games</h3>
+            <h3>Recent Games</h3>
             <table>
                 <thead>
                     <tr>
-                        <td>ID</td><td>Date</td><td>Team 1</td><td>Score</td><td>Team 2</td>
+                        <td><b>Date</b></td>
+                        <td><b>Team 1</b></td>
+                        <td><b>Score</b></td>
+                        <td><b>Team 2</b></td>
                     </tr>
                 </thead>
                 <tbody>
         `;
-        recent.forEach(game => {
-            let date = new Date(game.game_date);
+        recent_games.forEach(game => {
+            let date = new Date(game["game_date"]);
             let date_str = date.toLocaleDateString();
             innerHTML += `
                 <tr>
-                    <td>${game.game_id}</td>
                     <td>${date_str}</td>
-                    <td>${game.team_1_name}</td>
-                    <td>${game.team_1_score}–${game.team_2_score}</td>
-                    <td>${game.team_2_name}</td>
+                    <td>${game["team_1_name"]}</td>
+                    <td>${game["team_1_score"]}–${game["team_2_score"]}</td>
+                    <td>${game["team_2_name"]}</td>
                 </tr>
             `;
         });
@@ -65,8 +63,72 @@ function getRecentGames() {
                 </tbody>
             </table>
         `;
-        document.getElementById("recent_games_list").innerHTML = innerHTML;
-    }, sort);
+        document.getElementById("recent_games").innerHTML = innerHTML;
+
+        //top players
+        let top_players = result["top_players"];
+        innerHTML = `
+            <h3>Top Players by Kills</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <td><b>Player ID</b></td>
+                        <td><b>Name</b></td>
+                        <td><b>Age</b></td>
+                        <td><b>Country</b></td>
+                        <td><b>Kills</b></td>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        top_players.forEach(player => {
+            innerHTML += `
+                <tr>
+                    <td>${player["player_id"]}</td>
+                    <td>${player["name"]}</td>
+                    <td>${player["age"]}</td>
+                    <td>${player["country"]}</td>
+                    <td>${player["kills"]}</td>
+                </tr>
+            `;
+        });
+        innerHTML += `
+                </tbody>
+            </table>
+        `;
+        document.getElementById("top_players").innerHTML = innerHTML;
+
+        //top teams
+        let top_teams = result["top_teams"];
+        innerHTML = `
+            <h3>Top Teams by Wins</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <td><b>Team ID</b></td>
+                        <td><b>Name</b></td>
+                        <td><b>Region</b></td>
+                        <td><b>Wins</b></td>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        top_teams.forEach(team => {
+            innerHTML += `
+                <tr>
+                    <td>${team["team_id"]}</td>
+                    <td>${team["name"]}</td>
+                    <td>${team["region"]}</td>
+                    <td>${team["wins"]}</td>
+                </tr>
+            `;
+        });
+        innerHTML += `
+                </tbody>
+            </table>
+        `;
+        document.getElementById("top_teams").innerHTML = innerHTML;
+    }, null);
 }
 
 // Players page ------------------------------------------------------------

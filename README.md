@@ -23,6 +23,6 @@ Adding, editing, and viewing games is done in the <i>Games</i> page.
 - <b>Games: </b> When adding or editing a team, make sure that all of the initial fields are filled, and that the scores arent negative and the two competing teams are not the same. <br>When setting stats for players, each participating player needs all of their fields filled. Any player with no fields filled is not participating in that game, and both teams need the same amount of players participating.
 
 ### Sorting
-The main list in each page can be sorted by clicking the cells in the header row, every other click will change the sorting order (ascending/descending), the default sorting order is by ID.
+The main table in the <i>Players</i>, <i>Teams</i>,and <i>Games</i> pages can be sorted by clicking the cells in the header row, every other click will change the sorting order (ascending/descending), the default sorting order is by ID.
 <br>In the <i>Games</i> page, sorting by the <i>Score</i> column means sorting by score difference.
 

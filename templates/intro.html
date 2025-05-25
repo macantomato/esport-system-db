@@ -6,20 +6,29 @@
     <title>Esports DB</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body onload="getRecentGames()" onclick="clearStatus()">
+<body onload="getHomePageInfo()">
     <h1>Esports DB</h1>
     <nav>
-      <a href="{{ url_for('intro') }}">Home</a>
-      <a href="{{ url_for('players_page') }}">Players</a>
-      <a href="{{ url_for('teams_page') }}">Teams</a>
-      <a href="{{ url_for('games_page') }}">Games</a>
+        <a href="{{ url_for('intro') }}">Home</a>
+        <a href="{{ url_for('players_page') }}">Players</a>
+        <a href="{{ url_for('teams_page') }}">Teams</a>
+        <a href="{{ url_for('games_page') }}">Games</a>
     </nav>
-    <p id="status"></p>
-    <div class="container">
-      <div class="input"></div>
-      <div class="input area2"></div>
-      <div class="list" id="recent_games_list"></div>
-  </div>
+    <h5>
+        Welcome to Esports DB! Navigate to the <i>Players</i>, <i>Teams</i>,
+        and <i>Games</i> pages to view and modify data.
+    </h5>
+    <div id="main">
+        <div class="home_list" id="recent_games" onclick="window.location.href=`{{ url_for('games_page') }}`;">
+            <!-- data from script -->
+        </div>
+        <div class="home_list" id="top_players" onclick="window.location.href=`{{ url_for('players_page') }}`;">
+            <!-- data from script -->
+        </div>
+        <div class="home_list" id="top_teams" onclick="window.location.href=`{{ url_for('teams_page') }}`;">
+            <!-- data from script -->
+        </div>
+    </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

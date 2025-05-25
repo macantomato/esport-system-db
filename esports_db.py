@@ -244,6 +244,48 @@ def edit_game():
     sql_edit_game(game_id, date, team_1_score, team_2_score, player_stats)
     return jsonify({"game_id": game_id})
 
+@app.post("/post/get_home_page_info")
+def get_home_page_info():
+    all_info = {}
+    data = sql_get_games("game_date", False, True)
+    games = [
+        {
+            "game_date": date,
+            "team_1_id": team_1,
+            "team_2_id": team_2,
+            "team_1_score": team_1_score,
+            "team_2_score": team_2_score,
+            "winner_team_id": winner_team,
+            "team_1_name": team_1_name,
+            "team_2_name": team_2_name
+        }
+        for (_, date, team_1, team_2, team_1_score, team_2_score, winner_team, team_1_name, team_2_name) in data
+    ]
+    all_info["recent_games"] = games
+    data = sql_get_home_page_info()
+    top_player_data = [
+        {
+            "player_id": player_id,
+            "name": name,
+            "age": age,
+            "country": country,
+            "kills": kills
+        }
+        for (player_id, name, age, country, kills) in data[0]
+    ]
+    all_info["top_players"] = top_player_data
+    top_teams_data = [
+        {
+            "team_id": team_id,
+            "name": name,
+            "region": region,
+            "wins": wins
+        }
+        for (team_id, name, region, wins) in data[1]
+    ]
+    all_info["top_teams"] = top_teams_data
+    return jsonify(all_info)
+
 #sql functions ---------------------------------------------------------------------
 def sql_setup():
     #create and/or use db
@@ -383,11 +425,11 @@ def sql_add_game(date, team_1_id, team_2_id, team_1_score, team_2_score, player_
         connection.commit()
     return game_id
 
-def sql_get_games(sort = None, reverse = None):
+def sql_get_games(sort = None, reverse = None, limit = False):
     if not sort or reverse is None:
         cursor.execute("SELECT * FROM GamesExtended;")
     else:
-        cursor.execute(f"SELECT * FROM GamesExtended ORDER BY {sort} {'ASC' if reverse else 'DESC'};")
+        cursor.execute(f"SELECT * FROM GamesExtended ORDER BY {sort} {'ASC' if reverse else 'DESC'} {'LIMIT 5' if limit else ''};")
     data = cursor.fetchall()
     return data
 
@@ -435,6 +477,14 @@ def sql_edit_game(game_id, date, team_1_score, team_2_score, player_stats):
             VALUES (%s, %s, %s, %s, %s, %s);
         """, (game_id, player_id, kills, deaths, damage, healing))
         connection.commit()
+
+def sql_get_home_page_info():
+    data = []
+    cursor.execute("SELECT p.*, sum(kills) AS kills FROM Players p JOIN PlayerStats ps ON p.player_id = ps.player_id GROUP BY p.player_id ORDER BY sum(kills) DESC LIMIT 5;")
+    data.append(cursor.fetchall())
+    cursor.execute("SELECT t.*, count(*) AS wins FROM Teams t JOIN Games g ON t.team_id = g.winner_team_id GROUP BY t.team_id ORDER BY count(*) DESC LIMIT 5;")
+    data.append(cursor.fetchall())
+    return data
 
 #main ---------------------------------------------------------------------
 if __name__ == "__main__":
